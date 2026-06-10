@@ -160,7 +160,11 @@ async function main() {
     }
   }
 
-  const dispatcher = new Dispatcher({ projectDir });
+  let dispatcher: Dispatcher | undefined;
+  const getDispatcher = (): Dispatcher => {
+    if (!dispatcher) dispatcher = new Dispatcher({ projectDir });
+    return dispatcher;
+  };
 
   switch (command) {
     case "dispatch":
@@ -168,7 +172,7 @@ async function main() {
         console.error("Usage: dispatch --issue N --agent agent-id [--pr N]");
         process.exit(1);
       }
-      const result = await dispatcher.dispatchAgent(
+      const result = await getDispatcher().dispatchAgent(
         issue,
         agentId,
         prNumber ? { prNumber } : undefined
@@ -199,7 +203,7 @@ async function main() {
         const raw = JSON.parse(fs.readFileSync(filePath, "utf8")) as Record<string, unknown>;
         const changes = normalizeContract(raw, "CodeChanges", issue) as unknown as CodeChanges;
         saveArtifact(projectDir, issue, submitAgent, changes as unknown as Record<string, unknown>);
-        await dispatcher.github.addIssueComment(
+        await getDispatcher().github.addIssueComment(
           issue,
           formatContractComment(submitAgent, changes as unknown as Record<string, unknown>)
         );
@@ -336,7 +340,7 @@ async function main() {
       }
       {
         const fromAgent = getArg(args, "--from");
-        const pipeline = await dispatcher.runPipeline(issue, fromAgent ? { fromAgent } : undefined);
+        const pipeline = await getDispatcher().runPipeline(issue, fromAgent ? { fromAgent } : undefined);
         console.log(JSON.stringify(pipeline, null, 2));
         if (pipeline.status === "waiting") {
           console.log("PIPELINE_STATUS=waiting");
@@ -358,7 +362,7 @@ async function main() {
           console.error("resume requires --from <agent-id> (e.g. plan-agent)");
           process.exit(1);
         }
-        const pipeline = await dispatcher.runPipeline(issue, { fromAgent });
+        const pipeline = await getDispatcher().runPipeline(issue, { fromAgent });
         console.log(JSON.stringify(pipeline, null, 2));
         if (pipeline.status === "waiting") {
           console.log("PIPELINE_STATUS=waiting");
@@ -374,7 +378,7 @@ async function main() {
         console.error("Usage: pr-create --issue N --project-dir PATH");
         process.exit(1);
       }
-      await runPrCreate(projectDir, issue, dispatcher);
+      await runPrCreate(projectDir, issue, getDispatcher());
       break;
 
     case "post-merge":
@@ -386,7 +390,7 @@ async function main() {
         const mergedBy = getArg(args, "--merged-by");
         const mergeSha = getArg(args, "--merge-sha");
         const mergeMethod = getArg(args, "--merge-method");
-        const result = await dispatcher.runPostMerge(issue, {
+        const result = await getDispatcher().runPostMerge(issue, {
           prNumber,
           mergedBy,
           mergeSha,
@@ -436,10 +440,10 @@ async function main() {
         console.error("Usage: review --issue N --pr N --project-dir PATH");
         process.exit(1);
       }
-      const review = await dispatcher.dispatchAgent(issue, "review-agent", {
+      const review = await getDispatcher().dispatchAgent(issue, "review-agent", {
         prNumber,
       });
-      await applyReviewVerdict(dispatcher.github, prNumber, review.contract);
+      await applyReviewVerdict(getDispatcher().github, prNumber, review.contract);
       console.log(JSON.stringify(review, null, 2));
       break;
 
@@ -489,10 +493,10 @@ async function main() {
         const routed = await runIssueRoute({
           projectDir,
           issueNumber: issue,
-          dispatcher,
+          dispatcher: getDispatcher(),
         });
         console.log(JSON.stringify(routed, null, 2));
-        const wf = await dispatcher.dispatchAgent(issue, "workflow-agent");
+        const wf = await getDispatcher().dispatchAgent(issue, "workflow-agent");
         console.log(JSON.stringify(wf, null, 2));
         console.log("ROUTE_ISSUE=1");
       }
@@ -571,7 +575,7 @@ async function main() {
           console.error("No DLQ entry and no --from agent specified");
           process.exit(1);
         }
-        const pipeline = await dispatcher.runPipeline(issue, { fromAgent });
+        const pipeline = await getDispatcher().runPipeline(issue, { fromAgent });
         console.log(JSON.stringify(pipeline, null, 2));
         if (pipeline.status === "waiting") {
           console.log("PIPELINE_STATUS=waiting");

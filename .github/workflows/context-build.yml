@@ -19,9 +19,6 @@ on:
       context_pack_hash:
         description: Content hash of ContextPack
         value: ${{ jobs.build.outputs.pack_hash }}
-    secrets:
-      GITHUB_TOKEN:
-        required: true
 
 permissions:
   contents: read

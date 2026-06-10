@@ -11,8 +11,6 @@ on:
     secrets:
       ANTHROPIC_API_KEY:
         required: true
-      GITHUB_TOKEN:
-        required: true
 
 permissions:
   contents: read
@@ -49,8 +47,7 @@ jobs:
         with:
           issue_number: ${{ inputs.issue_number }}
           target_agent: security-agent
-        secrets:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        secrets: inherit
 
       - name: Dispatch security-agent
         working-directory: platform/runtime

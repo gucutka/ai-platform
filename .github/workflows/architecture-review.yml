@@ -15,8 +15,6 @@ on:
     secrets:
       ANTHROPIC_API_KEY:
         required: true
-      GITHUB_TOKEN:
-        required: true
       GH_PAT:
         required: false
 

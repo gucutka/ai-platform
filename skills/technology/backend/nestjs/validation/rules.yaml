@@ -1,0 +1,4 @@
+skill_id: nestjs
+rules:
+  - id: present
+    check: skill.md exists

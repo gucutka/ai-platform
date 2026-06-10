@@ -1,0 +1,4 @@
+skill_id: implementation-planning
+rules:
+  - id: present
+    check: skill.md exists

@@ -1,0 +1,19 @@
+# Token Budget Rules
+version: "1.0.0"
+
+reservation:
+  at_stage: plan-agent
+  field: ImplementationPlan.token_budget_reserved
+
+limits:
+  enforce_at: 110%
+  warn_at: [70, 90, 100]
+
+model_routing:
+  haiku: [workflow-agent, triage-agent, handoff-summarizer-agent, contract-validator-agent]
+  sonnet: [requirements-agent, product-spec-agent, technical-spec-agent, plan-agent, implement-agents, review-agent, qa-agent, architecture-review-agent]
+  opus: [migration-agent]
+
+cache:
+  context_pack_ttl: 3600
+  reuse_on_retry: true

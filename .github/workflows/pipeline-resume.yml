@@ -1,0 +1,79 @@
+name: Pipeline Resume
+on:
+  workflow_call:
+    inputs:
+      issue_number:
+        required: true
+        type: number
+      from_agent:
+        required: false
+        type: string
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        required: true
+        type: number
+      from_agent:
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  resume:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: project
+
+      - uses: actions/checkout@v4
+        with:
+          path: platform
+
+      - uses: ./platform/.github/actions/setup-runtime
+        with:
+          platform-path: platform
+
+      - uses: ./platform/.github/actions/github-app-token
+        id: gh
+        with:
+          platform-path: platform
+          app-id: ${{ secrets.GITHUB_APP_ID }}
+          app-private-key: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
+          installation-id: ${{ secrets.GITHUB_APP_INSTALLATION_ID }}
+          fallback-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore pipeline trace
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: ai-platform-trace-issue-${{ inputs.issue_number || github.event.inputs.issue_number }}
+          path: project/.ai-platform
+
+      - name: Resume pipeline
+        working-directory: platform/runtime
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ steps.gh.outputs.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PROJECT_DIR: ${{ github.workspace }}/project
+          PLATFORM_ROOT: ${{ github.workspace }}/platform
+        run: |
+          ISSUE="${{ inputs.issue_number || github.event.inputs.issue_number }}"
+          CMD="node dist/cli.js dlq-resume --issue $ISSUE"
+          FROM="${{ inputs.from_agent || github.event.inputs.from_agent }}"
+          if [ -n "$FROM" ]; then CMD="$CMD --from $FROM"; fi
+          eval "$CMD"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ai-platform-trace-issue-${{ inputs.issue_number || github.event.inputs.issue_number }}
+          path: project/.ai-platform/
+          retention-days: 90
+          if-no-files-found: warn

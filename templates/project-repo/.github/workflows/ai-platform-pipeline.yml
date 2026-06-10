@@ -1,0 +1,78 @@
+name: AI Platform Pipeline
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Issue number to process
+        required: true
+        type: number
+
+concurrency:
+  group: ai-platform-issue-${{ github.event.issue.number || inputs.issue_number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: read
+
+env:
+  PROJECT_DIR: ${{ github.workspace }}
+  PLATFORM_ROOT: ${{ github.workspace }}/ai-platform
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.action == 'labeled' && github.event.label.name == 'agent-route:pending')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.AI_PLATFORM_REPOSITORY }}
+          path: ai-platform
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: ./ai-platform/.github/actions/setup-runtime
+        with:
+          platform-path: ai-platform
+
+      - name: Resolve issue number
+        id: issue
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "number=${{ inputs.issue_number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "number=${{ github.event.issue.number }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run pipeline
+        id: pipeline
+        continue-on-error: true
+        working-directory: ai-platform/runtime
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PROJECT_DIR: ${{ github.workspace }}
+          PLATFORM_ROOT: ${{ github.workspace }}/ai-platform
+        run: |
+          node dist/cli.js run-pipeline --issue ${{ steps.issue.outputs.number }}
+
+      - name: Upload pipeline trace artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-platform-trace-issue-${{ steps.issue.outputs.number }}
+          path: .ai-platform/
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Fail if pipeline failed
+        if: steps.pipeline.outcome == 'failure'
+        run: exit 1

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-platform/contracts/DocumentationResult.v1.json",
+  "title": "DocumentationResult",
+  "type": "object",
+  "required": [
+    "contract",
+    "version",
+    "issue_id",
+    "docs_updated",
+    "status"
+  ],
+  "properties": {
+    "contract": {
+      "const": "DocumentationResult"
+    },
+    "version": {
+      "const": "1.0"
+    },
+    "issue_id": {
+      "type": "integer"
+    },
+    "docs_updated": {
+      "type": "array"
+    },
+    "status": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

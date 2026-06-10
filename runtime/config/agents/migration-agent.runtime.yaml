@@ -1,0 +1,20 @@
+agent_id: migration-agent
+enabled: true
+model: claude-opus-4-5
+max_tokens: 8192
+input_contracts:
+  - TriageResult@1.0
+output_contract: MigrationPlan@1.0
+required_context:
+  - issue
+  - manifest
+  - technical_knowledge
+context_layers: [technical, code]
+skills:
+  sdlc: [technical-design-format]
+  technology: [terraform]
+retry:
+  max_attempts: 3
+  backoff_ms: [30000, 120000, 300000]
+failure_handling:
+  label: agent-route:blocked

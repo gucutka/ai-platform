@@ -1,0 +1,25 @@
+# Platform Knowledge Governance Roles
+version: "1.0.0"
+
+platform_architect:
+  type: knowledge_governance_role
+  participates_in_project_sdlc: false
+  responsibilities:
+    - agent_registry
+    - skill_registry
+    - platform_adr
+    - platform_architecture
+    - platform_evolution
+    - platform_versioning
+
+platform_owner:
+  type: governance_role
+  responsibilities:
+    - platform_rollout
+    - github_app_policy
+    - onboarding_approval
+    - registry_deployment
+  reports_to: platform_architect_recommendations
+
+interaction:
+  platform_architect -> platform_owner -> project_repositories

@@ -1,0 +1,56 @@
+name: Release Approve
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        required: true
+        type: number
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.AI_PLATFORM_REPOSITORY || format('{0}/ai-platform', github.repository_owner) }}
+          path: ai-platform
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - uses: ./ai-platform/.github/actions/setup-runtime
+        with:
+          platform-path: ai-platform
+
+      - name: Approve release
+        id: tag
+        working-directory: ai-platform/runtime
+        env:
+          PROJECT_DIR: ${{ github.workspace }}
+        run: |
+          node dist/cli.js release-approve \
+            --issue ${{ inputs.issue_number }} \
+            --approve true \
+            --project-dir "$PROJECT_DIR" | tee /tmp/out.txt
+          echo "name=$(grep '^RELEASE_TAG=' /tmp/out.txt | cut -d= -f2-)" >> "$GITHUB_OUTPUT"
+
+      - name: Push tag
+        if: steps.tag.outputs.name != ''
+        run: |
+          git tag -a "${{ steps.tag.outputs.name }}" -m "Release ${{ steps.tag.outputs.name }}"
+          git push origin "${{ steps.tag.outputs.name }}"
+
+      - name: Mark published
+        working-directory: ai-platform/runtime
+        env:
+          PROJECT_DIR: ${{ github.workspace }}
+        run: |
+          node dist/cli.js release-approve \
+            --issue ${{ inputs.issue_number }} \
+            --approve true \
+            --publish true \
+            --project-dir "$PROJECT_DIR"

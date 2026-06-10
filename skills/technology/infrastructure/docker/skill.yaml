@@ -1,0 +1,5 @@
+skill_id: docker
+version: "2.0.0"
+production_grade: true
+description: "Container images and compose."
+context_budget_tokens: 2000

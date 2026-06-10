@@ -1,0 +1,61 @@
+# Project manifest — connect to AI Platform v2.1
+platform_version: "2.1.0"
+project_id: "CHANGE_ME"
+client_tier: standard  # standard | enterprise | regulated
+app_template: null     # set by scaffold-app, e.g. express-api | nextjs-minimal
+lifecycle_enabled: true
+
+# Licensed cloud agents / packages (empty = all catalog agents)
+# purchased_agents: [ba-pack, requirements-agent]
+
+runtime_profile: node-monorepo  # maps to technology skills
+
+token_budget:
+  monthly_usd: 500
+  per_issue_max: 25
+
+agent_routing:
+  default: cloud-agent
+  complex_refactor: claude-code
+
+gates:
+  require_human_review: true
+  require_security_scan: true
+  architect_review_gate: true
+  architecture_review_agent: true
+  automerge_on_ci_pass: false
+  automerge_requires_review_pass: true
+
+automerge:
+  enabled: false
+  method: squash
+  only_ai_prs: true
+
+knowledge_owners:
+  business_analyst: "@ba-handle"
+  product_analyst: "@pa-handle"
+  architect: "@architect-handle"
+
+knowledge_scopes:
+  - business
+  - product
+  - technical
+
+knowledge_enforcement: true
+knowledge_require_approval: true
+
+allowed_agents: []  # empty = all from platform registry
+
+allowed_paths:
+  - "src/**"
+  - "tests/**"
+  - "docs/**"
+  - "package.json"
+  - "package-lock.json"
+  - ".github/**"
+
+ci:
+  install: npm ci
+  test: npm test
+
+design_system_steward: null  # optional @handle for enterprise clients

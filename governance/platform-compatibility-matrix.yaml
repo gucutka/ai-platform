@@ -1,0 +1,17 @@
+# Platform ↔ Project Compatibility Matrix
+platform_version: "2.1.0"
+
+matrix:
+  - platform: "2.1.x"
+    agents: ">=1.0.0"
+    contracts: "1.0"
+    skills:
+      core: ">=1.0.0"
+      sdlc: ">=1.0.0"
+    context_pack: "1.0"
+    actions: ">=1.0.0"
+
+upgrade:
+  required_manifest_field: platform_version
+  block_dispatch_on_mismatch: true
+  notify: platform-owner

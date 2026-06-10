@@ -1,0 +1,23 @@
+agent_id: docs-agent
+enabled: true
+model: claude-opus-4-5
+max_tokens: 6000
+input_contracts:
+  - MergeRecord@1.0
+  - ProductSpec@1.0
+  - ReviewReport@1.0
+output_contract: DocumentationResult@1.0
+required_context:
+  - issue
+  - manifest
+  - merge_record
+  - product_spec
+skills:
+  core: [github-integration]
+  sdlc: [release-notes-format]
+  technology: [markdown-docs, openapi]
+retry:
+  max_attempts: 2
+  backoff_ms: [30000, 120000]
+failure_handling:
+  label: agent-route:blocked

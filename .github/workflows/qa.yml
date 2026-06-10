@@ -1,0 +1,25 @@
+name: QA Verification
+on:
+  workflow_call:
+    inputs:
+      pr_number: { required: true, type: number }
+      issue_number: { required: true, type: number }
+    secrets:
+      ANTHROPIC_API_KEY: { required: true }
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/workflows/context-build.yml
+        with:
+          issue_number: ${{ inputs.issue_number }}
+          target_agent: qa-agent
+        secrets: inherit
+      - name: Dispatch qa-agent
+        run: echo "qa-agent + CI"
+      - name: Run tests
+        run: echo "Project CI matrix invoked from caller"
+      - name: Emit VerificationResult
+        run: echo "VerificationResult@1.0"

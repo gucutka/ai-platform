@@ -1,0 +1,20 @@
+agent_id: triage-agent
+enabled: true
+model: claude-opus-4-5
+max_tokens: 4096
+input_contracts: []
+output_contract: TriageResult@1.0
+required_context:
+  - issue
+  - manifest
+context_layers: [business]
+skills:
+  core: [github-integration, escalation-protocols]
+  sdlc: [issue-triage]
+retry:
+  max_attempts: 3
+  backoff_ms: [30000, 120000, 300000]
+failure_handling:
+  escalate_to: tech-lead
+  label: agent-route:blocked
+next_agent: plan-agent

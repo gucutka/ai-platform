@@ -1,0 +1,20 @@
+name: Contract Validate
+on:
+  workflow_call:
+    inputs:
+      contract_name: { required: true, type: string }
+      payload_path: { required: true, type: string }
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install ajv-cli
+        run: npm install -g ajv-cli@5
+      - name: Validate JSON against schema
+        run: |
+          ajv validate -s "contracts/schemas/${{ inputs.contract_name }}.v1.json" -d "${{ inputs.payload_path }}"

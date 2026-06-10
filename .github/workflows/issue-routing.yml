@@ -1,0 +1,69 @@
+name: Issue Routing
+on:
+  workflow_call:
+    inputs:
+      issue_number:
+        required: true
+        type: number
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: true
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        required: true
+        type: number
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  route:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_call' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.action == 'labeled' && github.event.label.name == 'agent-route:pending')
+    steps:
+      - name: Checkout project (caller repo)
+        uses: actions/checkout@v4
+        with:
+          path: project
+
+      - name: Checkout AI Platform
+        uses: actions/checkout@v4
+        with:
+          path: platform
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Setup runtime
+        uses: ./platform/.github/actions/setup-runtime
+        with:
+          platform-path: platform
+
+      - name: Resolve issue number
+        id: issue
+        run: |
+          if [ "${{ github.event_name }}" = "issues" ]; then
+            echo "number=${{ github.event.issue.number }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "number=${{ inputs.issue_number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "number=${{ inputs.issue_number }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Route issue (sync + triage + workflow)
+        working-directory: platform/runtime
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PROJECT_DIR: ${{ github.workspace }}/project
+          PLATFORM_ROOT: ${{ github.workspace }}/platform
+        run: |
+          node dist/cli.js route-issue --issue ${{ steps.issue.outputs.number }}

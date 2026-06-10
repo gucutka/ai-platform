@@ -1,0 +1,25 @@
+# Application starter templates — scaffold before ai-platform onboarding
+version: "1.0.0"
+
+templates:
+  express-api:
+    label: Express REST API
+    description: Node.js Express API with health check and sample CRUD route
+    tags: [node, express, api, rest]
+    stack:
+      runtime: node
+      framework: express
+    default_tier: standard
+    seed_knowledge: true
+    skeleton: express-api/skeleton
+
+  nextjs-minimal:
+    label: Next.js App Router (minimal)
+    description: Next.js 14 App Router starter with health route
+    tags: [nextjs, react, frontend, vercel]
+    stack:
+      runtime: node
+      framework: nextjs
+    default_tier: standard
+    seed_knowledge: true
+    skeleton: nextjs-minimal/skeleton

@@ -1,0 +1,194 @@
+# Squash-merge agent PRs when CI is green and manifest gates allow it.
+name: Automerge
+
+on:
+  workflow_run:
+    workflows: [Test]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  automerge:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve PR from workflow run
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const pulls = run.pull_requests ?? [];
+            if (pulls.length === 0) {
+              core.setFailed("Test workflow run is not linked to a pull request");
+              return;
+            }
+            core.setOutput("number", String(pulls[0].number));
+            core.setOutput("head_sha", run.head_sha);
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.head_sha }}
+
+      - name: Read manifest gates
+        id: manifest
+        run: |
+          node <<'NODE'
+          import fs from "node:fs";
+          const raw = fs.readFileSync(".ai-platform/manifest.yaml", "utf8");
+          const flag = (pattern, fallback) => {
+            const m = raw.match(pattern);
+            if (!m) return fallback;
+            return m[1].toLowerCase() === "true";
+          };
+          const out = process.env.GITHUB_OUTPUT;
+          const w = (k, v) => { out?.append(`${k}=${v}\n`); };
+          w("require_human_review", flag(/require_human_review:\s*(true|false)/i, false) ? "true" : "false");
+          w("require_security_scan", flag(/require_security_scan:\s*(true|false)/i, false) ? "true" : "false");
+          w("automerge_enabled", flag(/^\s*enabled:\s*(true|false)/im, true) ? "true" : "false");
+          w("automerge_on_ci_pass", flag(/automerge_on_ci_pass:\s*(true|false)/i, true) ? "true" : "false");
+          w("requires_review_pass", flag(/automerge_requires_review_pass:\s*(true|false)/i, true) ? "true" : "false");
+          w("only_ai_prs", flag(/only_ai_prs:\s*(true|false)/i, true) ? "true" : "false");
+          const method = raw.match(/^\s*method:\s*(\w+)/im)?.[1] ?? "squash";
+          w("merge_method", method);
+          NODE
+
+      - name: Evaluate merge preconditions
+        id: checks
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          REQUIRE_HUMAN: ${{ steps.manifest.outputs.require_human_review }}
+          REQUIRE_SECURITY: ${{ steps.manifest.outputs.require_security_scan }}
+          AUTO_ENABLED: ${{ steps.manifest.outputs.automerge_enabled }}
+          AUTO_ON_CI: ${{ steps.manifest.outputs.automerge_on_ci_pass }}
+          REQUIRES_REVIEW: ${{ steps.manifest.outputs.requires_review_pass }}
+          ONLY_AI: ${{ steps.manifest.outputs.only_ai_prs }}
+        with:
+          script: |
+            const prNumber = Number(process.env.PR_NUMBER);
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            if (process.env.AUTO_ENABLED !== "true" || process.env.AUTO_ON_CI !== "true") {
+              core.info("Automerge disabled in manifest");
+              core.setOutput("should_merge", "false");
+              return;
+            }
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: prNumber,
+            });
+
+            if (pr.merged || pr.state !== "open") {
+              core.info("PR already merged or closed");
+              core.setOutput("should_merge", "false");
+              return;
+            }
+
+            if (process.env.ONLY_AI === "true" && !pr.title.startsWith("[AI]")) {
+              core.info("Not an AI Platform PR");
+              core.setOutput("should_merge", "false");
+              return;
+            }
+
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              owner,
+              repo,
+              issue_number: prNumber,
+            });
+            const names = labels.map((l) => l.name);
+
+            if (names.includes("agent:review-failed")) {
+              core.info("Review failed label present");
+              core.setOutput("should_merge", "false");
+              return;
+            }
+
+            if (process.env.REQUIRE_HUMAN === "true") {
+              if (!names.includes("human-review:approved")) {
+                core.info("Waiting for human-review:approved");
+                core.setOutput("should_merge", "false");
+                return;
+              }
+            }
+
+            if (process.env.REQUIRE_SECURITY === "true") {
+              if (!names.includes("security-scan:passed")) {
+                core.info("Waiting for security-scan:passed");
+                core.setOutput("should_merge", "false");
+                return;
+              }
+            }
+
+            if (names.includes("security-scan:failed") || names.includes("agent-route:blocked")) {
+              core.info("Security or route blocked");
+              core.setOutput("should_merge", "false");
+              return;
+            }
+
+            if (process.env.REQUIRES_REVIEW === "true") {
+              const approved =
+                names.includes("agent:approved") ||
+                (await github.rest.pulls.listReviews({ owner, repo, pull_number: prNumber }))
+                  .data.some((r) => r.state === "APPROVED");
+              if (!approved) {
+                core.info("Waiting for review-agent APPROVE");
+                core.setOutput("should_merge", "false");
+                return;
+              }
+            }
+
+            core.setOutput("should_merge", "true");
+
+      - name: Squash merge PR
+        if: steps.checks.outputs.should_merge == 'true'
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          MERGE_METHOD: ${{ steps.manifest.outputs.merge_method }}
+        with:
+          script: |
+            const prNumber = Number(process.env.PR_NUMBER);
+            const method = process.env.MERGE_METHOD || "squash";
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            await github.rest.pulls.merge({
+              owner,
+              repo,
+              pull_number: prNumber,
+              merge_method: method,
+            });
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: prNumber,
+            });
+
+            const issueMatch = pr.body?.match(/Issue #(\d+)/i);
+            if (issueMatch) {
+              const issueNumber = Number(issueMatch[1]);
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                body: `Automerged PR #${prNumber} after green CI (${method}).`,
+              });
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                labels: ["agent-route:merged"],
+              });
+            }
+
+            core.summary.addHeading("Automerge complete");
+            core.summary.addRaw(`PR #${prNumber} merged via \`${method}\`.`);

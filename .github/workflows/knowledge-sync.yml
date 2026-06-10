@@ -1,0 +1,49 @@
+name: Knowledge Sync
+on:
+  workflow_call:
+    inputs:
+      project_id:
+        required: false
+        type: string
+  workflow_dispatch:
+  push:
+    paths:
+      - "docs/knowledge/**"
+      - ".ai-platform/knowledge/approvals.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: project
+
+      - uses: actions/checkout@v4
+        with:
+          path: platform
+
+      - uses: ./platform/.github/actions/setup-runtime
+        with:
+          platform-path: platform
+
+      - name: Build knowledge index
+        id: sync
+        working-directory: platform/runtime
+        env:
+          PROJECT_DIR: ${{ github.workspace }}/project
+          PLATFORM_ROOT: ${{ github.workspace }}/platform
+        run: |
+          set -e
+          node dist/cli.js knowledge-sync --project-dir "$PROJECT_DIR" 2>&1 | tee /tmp/out.txt
+          echo "hash=$(grep '^KNOWLEDGE_INDEX_HASH=' /tmp/out.txt | cut -d= -f2-)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload knowledge index
+        uses: actions/upload-artifact@v4
+        with:
+          name: knowledge-index
+          path: project/.ai-platform/knowledge/
+          if-no-files-found: warn

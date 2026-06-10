@@ -1,0 +1,5 @@
+skill_id: github-integration
+version: "2.0.0"
+production_grade: true
+description: "Issues, PRs, labels, comments, workflow conventions."
+context_budget_tokens: 2000

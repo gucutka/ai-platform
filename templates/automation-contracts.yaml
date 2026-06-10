@@ -1,0 +1,20 @@
+# GitHub Automation Contracts
+version: "1.0.0"
+
+webhooks:
+  app: ai-platform-bot
+  events: [issues, issue_comment, pull_request, pull_request_review, check_run, workflow_run]
+
+label_sync:
+  workflow: sync-project-fields.yml
+  maps:
+    agent-route:*: Project.Agent Route
+    risk:*: Project.Risk
+    arch-review:*: Project.Status override Review
+
+dispatch_contract:
+  input: DispatchRequest
+  context: ContextPack
+  output: AgentOutput
+
+fence_tag: ai-platform-contract

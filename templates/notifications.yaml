@@ -1,0 +1,17 @@
+# SDLC notifications — provider-agnostic (Slack, webhook, stdio)
+version: "1.0"
+enabled: false
+
+# Default target when issue has no channel link
+provider: slack
+channel_id: dev-notifications
+
+events:
+  pr_created: true
+  review_pass: true
+  review_fail: false
+  merged: true
+  released: true
+
+# Optional — or set CHANNEL_NOTIFY_WEBHOOK_URL
+# webhook_url: https://example.com/hooks/sdlc

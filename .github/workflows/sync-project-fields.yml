@@ -1,0 +1,65 @@
+name: Sync Project Fields
+on:
+  workflow_call:
+    inputs:
+      issue_number:
+        required: true
+        type: number
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_call' ||
+      github.event_name == 'issues'
+    steps:
+      - name: Checkout project (caller repo)
+        uses: actions/checkout@v4
+        with:
+          path: project
+
+      - name: Checkout AI Platform
+        uses: actions/checkout@v4
+        with:
+          path: platform
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Setup runtime
+        uses: ./platform/.github/actions/setup-runtime
+        with:
+          platform-path: platform
+
+      - name: Resolve issue number
+        id: issue
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_call" ]; then
+            echo "number=${{ inputs.issue_number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "number=${{ github.event.issue.number }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sync labels → Project v2
+        working-directory: platform/runtime
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PROJECT_DIR: ${{ github.workspace }}/project
+          PLATFORM_ROOT: ${{ github.workspace }}/platform
+        run: |
+          node dist/cli.js sync-project --issue ${{ steps.issue.outputs.number }} --no-comment true
+
+      - name: Upload project sync artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-sync-issue-${{ steps.issue.outputs.number }}
+          path: project/.ai-platform/project-sync/
+          retention-days: 30
+          if-no-files-found: warn

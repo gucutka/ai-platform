@@ -1,0 +1,40 @@
+name: Validate Agents
+on:
+  push:
+    paths:
+      - "cloud-agents/**"
+      - "registries/**"
+      - "prompts/**"
+      - "runtime/**"
+      - "contracts/schemas/**"
+  pull_request:
+    paths:
+      - "cloud-agents/**"
+      - "registries/**"
+      - "prompts/**"
+      - "runtime/**"
+      - "contracts/schemas/**"
+  workflow_dispatch:
+
+jobs:
+  validate-agents:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: runtime/package.json
+      - name: Install
+        working-directory: runtime
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+      - name: Unit tests (builds first via pretest)
+        working-directory: runtime
+        run: npm test
+      - name: Cross-layer agent consistency
+        working-directory: runtime
+        env:
+          PLATFORM_ROOT: ${{ github.workspace }}
+        run: node dist/cli.js validate-agents

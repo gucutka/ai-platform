@@ -1,0 +1,25 @@
+version: "1.0"
+enabled: true
+
+phases:
+  intake:
+    label: Project intake
+    requirements:
+      - repo_scaffolded
+
+  discovery:
+    label: Business discovery
+    enabled_when: [intake]
+    requirements:
+      - knowledge:business-approved
+
+  architecture:
+    label: Architecture
+    enabled_when: [discovery]
+    requirements:
+      - knowledge:technical-approved
+
+  development:
+    label: Development
+    enabled_when: [discovery, architecture]
+    requirements: []

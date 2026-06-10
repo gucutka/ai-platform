@@ -1,0 +1,30 @@
+# Knowledge Approval Flows
+version: "1.0.0"
+
+flows:
+  business_requirements:
+    agent: requirements-agent
+    output: BusinessRequirements
+    owner: business_analyst
+    on_approve: label knowledge:business-approved
+    next_agent: product-spec-agent
+
+  product_spec:
+    agent: product-spec-agent
+    output: ProductSpec
+    owner: product_analyst
+    on_approve: label knowledge:product-approved
+    next_gate: architect_review
+
+  architect_review:
+    type: human
+    owner: architect
+    output: ArchitectReviewDecision
+    on_approve: dispatch technical-spec-agent
+
+  technical_design:
+    agent: technical-spec-agent
+    output: TechnicalDesign
+    owner: architect
+    on_approve: label knowledge:technical-approved
+    next_agent: plan-agent

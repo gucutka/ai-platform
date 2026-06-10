@@ -1,0 +1,47 @@
+# Agent Score Calculation (0-100)
+version: "1.0.0"
+
+agent_execution_report:
+  contract: AgentExecutionReport
+  storage: .ai-platform/evaluation/{issue_id}/{agent}-{timestamp}.json
+
+scoring:
+  backend-implement-agent:
+    max: 100
+    components:
+      contract_valid: { weight: 15, rule: "CodeChanges contract present" }
+      self_review: { weight: 25, rule: "self_review_passed true" }
+      minimal_diff: { weight: 20, rule: "files.length <= 8" }
+      no_escalation: { weight: 20, rule: "escalation_recommended not true" }
+      plan_alignment: { weight: 20, rule: "plan_task_coverage >= 0.9" }
+
+  frontend-implement-agent:
+    max: 100
+    components:
+      contract_valid: { weight: 15 }
+      self_review: { weight: 25 }
+      minimal_diff: { weight: 20 }
+      no_escalation: { weight: 20 }
+      plan_alignment: { weight: 20 }
+
+  review-agent:
+    max: 100
+    components:
+      verdict_valid: { weight: 15, rule: "verdict PASS or FAIL" }
+      findings_specificity: { weight: 25, rule: "FAIL implies findings with file+line" }
+      spec_compliance: { weight: 30, rule: "spec_compliance * 30" }
+      architecture_checked: { weight: 20, rule: "architecture_compliance present" }
+      no_false_pass: { weight: 10, rule: "PASS without critical findings" }
+
+  qa-agent:
+    max: 100
+    components:
+      ac_coverage: { weight: 30, rule: "ready_for_merge" }
+      tests_present: { weight: 25, rule: "tests_added > 0 when gaps" }
+      edge_cases: { weight: 20, rule: "edge_cases_covered" }
+      regression_risk: { weight: 25, rule: "low=25, medium=15, high=5" }
+
+thresholds:
+  production_ready: 85
+  needs_improvement: 70
+  failed: 0

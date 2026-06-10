@@ -1,0 +1,59 @@
+name: Release
+on:
+  workflow_call:
+    inputs:
+      issue_number:
+        required: true
+        type: number
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.AI_PLATFORM_REPOSITORY || format('{0}/ai-platform', github.repository_owner) }}
+          path: ai-platform
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - uses: ./ai-platform/.github/actions/setup-runtime
+        with:
+          platform-path: ai-platform
+
+      - name: Approve release draft
+        id: approve
+        working-directory: ai-platform/runtime
+        env:
+          PROJECT_DIR: ${{ github.workspace }}
+          PLATFORM_ROOT: ${{ github.workspace }}/ai-platform
+        run: |
+          node dist/cli.js release-approve \
+            --issue ${{ inputs.issue_number }} \
+            --approve true \
+            --project-dir "$PROJECT_DIR" | tee /tmp/out.txt
+          echo "tag=$(grep '^RELEASE_TAG=' /tmp/out.txt | cut -d= -f2-)" >> "$GITHUB_OUTPUT"
+
+      - name: Create git tag (human gate passed)
+        if: steps.approve.outputs.tag != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.approve.outputs.tag }}" -m "Release ${{ steps.approve.outputs.tag }} (issue #${{ inputs.issue_number }})"
+          git push origin "${{ steps.approve.outputs.tag }}"
+
+      - name: Comment on issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment ${{ inputs.issue_number }} \
+            --body "Release tag \`${{ steps.approve.outputs.tag }}\` published." \
+            --repo "${{ github.repository }}"

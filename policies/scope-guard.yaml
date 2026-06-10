@@ -1,0 +1,22 @@
+# Scope Guard — deterministic pre/post dispatch
+version: "1.0.0"
+
+pre_dispatch:
+  - check: branch_prefix_allowed
+  - check: paths_subset_of_manifest_allowed_paths
+  - check: token_budget_reserved
+
+post_output:
+  - check: no_secrets_patterns
+  - check: no_paths_outside_allowed
+  - check: contract_schema_valid
+
+block_patterns:
+  - ".env"
+  - "**/*credentials*"
+  - "**/secrets/**"
+
+on_violation:
+  action: block_and_escalate
+  escalate_to: security-owner
+  label: agent-route:blocked

@@ -1,0 +1,5 @@
+skill_id: technical-design-format
+version: "2.0.0"
+production_grade: true
+description: "Structured technical specs."
+context_budget_tokens: 2000

@@ -1,0 +1,23 @@
+agent_id: product-spec-agent
+enabled: true
+model: claude-opus-4-5
+max_tokens: 4096
+input_contracts:
+  - TriageResult@1.0
+  - BusinessRequirements@1.0
+output_contract: ProductSpec@1.0
+required_context:
+  - issue
+  - manifest
+  - business_requirements
+context_layers: [business, product]
+skills:
+  core: [github-integration]
+  sdlc: [impact-analysis, acceptance-criteria-mapping]
+retry:
+  max_attempts: 3
+  backoff_ms: [30000, 120000, 300000]
+failure_handling:
+  escalate_to: tech-lead
+  label: agent-route:blocked
+next_agent: technical-spec-agent

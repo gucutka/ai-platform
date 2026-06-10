@@ -1,0 +1,22 @@
+agent_id: qa-agent
+enabled: true
+model: claude-opus-4-5
+max_tokens: 8192
+input_contracts:
+  - ImplementationPlan@1.0
+  - TriageResult@1.0
+output_contract: VerificationResult@1.0
+required_context:
+  - issue
+  - manifest
+  - plan
+  - acceptance_criteria
+skills:
+  core: [github-integration]
+  sdlc: [test-generation, acceptance-criteria-mapping]
+  technology: [playwright, jest]
+retry:
+  max_attempts: 3
+  backoff_ms: [30000, 120000, 300000]
+failure_handling:
+  escalate_to: tech-lead

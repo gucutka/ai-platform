@@ -1,0 +1,70 @@
+name: Context Build
+on:
+  workflow_call:
+    inputs:
+      issue_number:
+        required: true
+        type: number
+      target_agent:
+        required: true
+        type: string
+      tier:
+        required: false
+        type: string
+        default: T2
+    outputs:
+      context_pack_ref:
+        description: Storage ref for ContextPack v1
+        value: ${{ jobs.build.outputs.pack_ref }}
+      context_pack_hash:
+        description: Content hash of ContextPack
+        value: ${{ jobs.build.outputs.pack_hash }}
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      pack_ref: ${{ steps.pack.outputs.ref }}
+      pack_hash: ${{ steps.pack.outputs.hash }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: project
+
+      - uses: actions/checkout@v4
+        with:
+          path: platform
+
+      - uses: ./platform/.github/actions/setup-runtime
+        with:
+          platform-path: platform
+
+      - name: Build ContextPack v1
+        id: pack
+        working-directory: platform/runtime
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PROJECT_DIR: ${{ github.workspace }}/project
+          PLATFORM_ROOT: ${{ github.workspace }}/platform
+        run: |
+          set -e
+          node dist/cli.js build-context \
+            --issue ${{ inputs.issue_number }} \
+            --agent ${{ inputs.target_agent }} \
+            2>&1 | tee /tmp/out.txt
+          echo "ref=.ai-platform/context/${{ inputs.issue_number }}/${{ inputs.target_agent }}.json" >> "$GITHUB_OUTPUT"
+          echo "hash=$(grep '^CONTEXT_PACK_HASH=' /tmp/out.txt | cut -d= -f2-)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload ContextPack artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: context-pack-${{ inputs.issue_number }}-${{ inputs.target_agent }}
+          path: project/.ai-platform/context/${{ inputs.issue_number }}/

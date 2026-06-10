@@ -1,0 +1,17 @@
+agent_id: handoff-summarizer-agent
+enabled: true
+model: claude-haiku-4-5
+max_tokens: 1024
+input_contracts: []
+output_contract: HandoffSummary@1.0
+required_context:
+  - issue
+  - manifest
+skills:
+  core: [github-integration]
+retry:
+  max_attempts: 2
+  backoff_ms: [1000, 3000]
+failure_handling:
+  escalate_to: tech-lead
+  label: agent-route:blocked

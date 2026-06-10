@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-platform/contracts/MigrationPlan.v1.json",
+  "title": "MigrationPlan",
+  "type": "object",
+  "required": [
+    "contract",
+    "version",
+    "issue_id",
+    "steps",
+    "risk_level"
+  ],
+  "properties": {
+    "contract": {
+      "const": "MigrationPlan"
+    },
+    "version": {
+      "const": "1.0"
+    },
+    "issue_id": {
+      "type": "integer"
+    },
+    "steps": {
+      "type": "array"
+    },
+    "risk_level": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

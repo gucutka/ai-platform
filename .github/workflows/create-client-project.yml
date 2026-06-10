@@ -1,0 +1,103 @@
+# Bootstrap a new client repo from templates/project-repo (no local CLI required).
+name: Create Client Project
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: Repository name / project_id (e.g. b2b-todo-saas)
+        required: true
+        type: string
+      target_org:
+        description: GitHub org for the new repo (default = this repo owner)
+        required: false
+        type: string
+      visibility:
+        description: Repository visibility
+        required: true
+        type: choice
+        default: private
+        options:
+          - private
+          - public
+      client_tier:
+        description: Client tier in manifest
+        required: true
+        type: choice
+        default: standard
+        options:
+          - standard
+          - enterprise
+          - regulated
+      platform_ref:
+        description: ai-platform git ref for templates (branch or tag)
+        required: false
+        default: main
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.platform_ref }}
+
+      - uses: ./.github/actions/setup-runtime
+        with:
+          platform-path: .
+
+      - name: Resolve target org
+        id: meta
+        run: |
+          ORG="${{ inputs.target_org }}"
+          if [ -z "$ORG" ]; then ORG="${{ github.repository_owner }}"; fi
+          echo "org=$ORG" >> "$GITHUB_OUTPUT"
+          echo "full_name=$ORG/${{ inputs.project_id }}" >> "$GITHUB_OUTPUT"
+          echo "platform_repository=$ORG/${{ github.event.repository.name }}" >> "$GITHUB_OUTPUT"
+
+      - name: Scaffold client repo
+        working-directory: runtime
+        run: |
+          node dist/cli.js create-client-project \
+            --target /tmp/client-repo \
+            --project-id "${{ inputs.project_id }}" \
+            --platform-owner "${{ steps.meta.outputs.org }}" \
+            --tier "${{ inputs.client_tier }}"
+
+      - name: Create GitHub repository and push
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          FULL="${{ steps.meta.outputs.full_name }}"
+          VIS="${{ inputs.visibility }}"
+          cd /tmp/client-repo
+          git init -b main
+          git add .
+          git commit -m "chore: bootstrap client project from ai-platform"
+          gh repo create "$FULL" --"$VIS" --source=. --remote=origin --push
+
+      - name: Set repository variables
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          gh variable set AI_PLATFORM_REPOSITORY \
+            --body "${{ steps.meta.outputs.platform_repository }}" \
+            --repo "${{ steps.meta.outputs.full_name }}"
+
+      - name: Summary
+        run: |
+          echo "## Client project created" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Repository:** https://github.com/${{ steps.meta.outputs.full_name }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **project_id:** \`${{ inputs.project_id }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **AI_PLATFORM_REPOSITORY:** \`${{ steps.meta.outputs.platform_repository }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Next steps" >> "$GITHUB_STEP_SUMMARY"
+          echo "1. Add org/repo secrets: \`ANTHROPIC_API_KEY\`, \`GH_PAT\`, \`SLACK_*\` (optional)" >> "$GITHUB_STEP_SUMMARY"
+          echo "2. Edit \`.ai-platform/channels.yaml\` — bind Slack channel IDs" >> "$GITHUB_STEP_SUMMARY"
+          echo "3. Route Slack Events → \`repository_dispatch\` (\`channel-event\`) on this repo" >> "$GITHUB_STEP_SUMMARY"

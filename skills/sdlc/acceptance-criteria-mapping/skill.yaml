@@ -1,0 +1,5 @@
+skill_id: acceptance-criteria-mapping
+version: "2.0.0"
+production_grade: true
+description: "Map AC to tests and implementation tasks."
+context_budget_tokens: 2000

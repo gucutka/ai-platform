@@ -1,0 +1,5 @@
+skill_id: security-review
+version: "2.0.0"
+production_grade: true
+description: "Security checklist for PRs."
+context_budget_tokens: 2000

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-platform/contracts/ReleaseResult.v1.json",
+  "title": "ReleaseResult",
+  "type": "object",
+  "required": [
+    "contract",
+    "version",
+    "issue_id",
+    "version",
+    "tag"
+  ],
+  "properties": {
+    "contract": {
+      "const": "ReleaseResult"
+    },
+    "version": {
+      "type": "string"
+    },
+    "issue_id": {
+      "type": "integer"
+    },
+    "tag": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

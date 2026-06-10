@@ -1,0 +1,33 @@
+{
+  "name": "@ai-platform/runtime",
+  "version": "2.1.0",
+  "description": "Runtime dispatcher for Agentic SDLC Platform",
+  "type": "module",
+  "bin": {
+    "ai-platform": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli.js",
+    "pipeline": "node dist/cli.js run-pipeline",
+    "pretest": "npm run build",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.102.0",
+    "@octokit/rest": "^21.0.2",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "glob": "^11.0.0",
+    "minimatch": "^10.0.1",
+    "yaml": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.8"
+  }
+}

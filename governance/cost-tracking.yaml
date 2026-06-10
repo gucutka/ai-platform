@@ -1,0 +1,22 @@
+# Cost Tracking
+version: "1.0.0"
+
+attribution_chain:
+  - client
+  - project_id
+  - issue_id
+  - agent_run_id
+  - model
+  - usd
+
+alerts:
+  - threshold_percent: 70
+    action: warn_tech_lead
+  - threshold_percent: 90
+    action: require_em_approval
+  - threshold_percent: 100
+    action: block_dispatch
+
+reporting:
+  workflow: cost-report.yml
+  metrics: [burn_rate, cost_per_merged_pr, cost_per_released_feature]

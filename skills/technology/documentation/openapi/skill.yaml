@@ -1,0 +1,5 @@
+skill_id: openapi
+version: "2.0.0"
+production_grade: true
+description: "API spec conventions."
+context_budget_tokens: 2000

@@ -1,0 +1,61 @@
+name: Channel Events
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: Channel provider (slack, webhook, stdio)
+        required: true
+        default: webhook
+      payload_json:
+        description: Inline JSON payload (normalized or provider-native)
+        required: true
+        type: string
+  repository_dispatch:
+    types: [channel-event]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  channel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.AI_PLATFORM_REPOSITORY }}
+          path: ai-platform
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: ./ai-platform/.github/actions/setup-runtime
+        with:
+          platform-path: ai-platform
+
+      - name: Write payload
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo '${{ inputs.payload_json }}' > /tmp/channel-payload.json
+          else
+            echo '${{ toJson(github.event.client_payload) }}' > /tmp/channel-payload.json
+          fi
+
+      - name: Process channel event
+        working-directory: ai-platform/runtime
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_SIGNING_SECRET: ${{ secrets.SLACK_SIGNING_SECRET }}
+          CHANNEL_WEBHOOK_SECRET: ${{ secrets.CHANNEL_WEBHOOK_SECRET }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PROJECT_DIR: ${{ github.workspace }}
+          PLATFORM_ROOT: ${{ github.workspace }}/ai-platform
+          CLAUDE_RUNTIME: cloud-agents
+        run: |
+          PROVIDER="${{ github.event_name == 'workflow_dispatch' && inputs.provider || github.event.client_payload.provider || 'webhook' }}"
+          node dist/cli.js channel-receive \
+            --provider "$PROVIDER" \
+            --payload-file /tmp/channel-payload.json \
+            --project-dir "$PROJECT_DIR"

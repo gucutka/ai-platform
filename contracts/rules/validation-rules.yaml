@@ -1,0 +1,23 @@
+# Contract Validation Rules v1.0
+version: "1.0.0"
+
+deterministic:
+  engine: json-schema
+  schema_dir: ../schemas
+  on_fail: retry_agent
+  max_retries: 3
+
+semantic:
+  agent: contract-validator-agent
+  trigger_when: schema_valid_and_semantic_rules_defined
+  rules:
+    - contract: ProductSpec
+      check: acceptance_criteria_mapped_must_be_true_for_approval
+    - contract: ArchitectureReviewReport
+      check: verdict_block_prevents_review_agent
+    - contract: VerificationResult
+      check: ready_for_merge_requires_all_ac_true
+
+artifact:
+  fence_tag: ai-platform-contract
+  storage: issue_comment_and_actions_artifact

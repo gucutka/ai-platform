@@ -1,0 +1,20 @@
+agent_id: release-agent
+enabled: true
+model: claude-opus-4-5
+max_tokens: 4000
+input_contracts:
+  - DocumentationResult@1.0
+  - MergeRecord@1.0
+output_contract: ReleaseResult@1.0
+required_context:
+  - issue
+  - manifest
+  - documentation_result
+skills:
+  core: [github-integration]
+  sdlc: [release-notes-format]
+retry:
+  max_attempts: 2
+  backoff_ms: [30000, 120000]
+failure_handling:
+  label: release:pending-approval

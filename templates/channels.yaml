@@ -1,0 +1,26 @@
+# Channel bindings — map provider channel ids to lifecycle phase + agent
+version: "1.0"
+enabled: true
+default_provider: slack
+
+# Bind channel_id (exact or prefix*) to phase and conversational agent
+bindings:
+  - channel_id: "intake*"
+    phase: intake
+    agent_id: project-intake-conversation-agent
+    label: Project intake
+
+  - channel_id: "discovery*"
+    phase: discovery
+    agent_id: requirements-conversation-agent
+    label: Business discovery
+
+  - channel_id: "arch*"
+    phase: architecture
+    agent_id: architecture-conversation-agent
+    label: Architecture
+
+  - channel_id: "dev*"
+    phase: development
+    agent_id: feature-intake-conversation-agent
+    label: Feature intake

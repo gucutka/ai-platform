@@ -1,0 +1,6 @@
+# GitHub Projects v2 — optional board sync
+version: "1.0"
+enabled: false
+owner: YOUR_GITHUB_OWNER
+owner_type: organization
+# project_number: 1

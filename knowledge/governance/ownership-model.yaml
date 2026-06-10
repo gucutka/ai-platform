@@ -1,0 +1,35 @@
+# Knowledge Ownership Model — Blueprint v2.1
+version: "1.0.0"
+
+owners:
+  business_analyst:
+    layer: business
+    path: docs/knowledge/business/
+    approves_contract: BusinessRequirements
+    gate_label: knowledge:business-approved
+
+  product_analyst:
+    layer: product
+    path: docs/knowledge/product/
+    approves_contract: ProductSpec
+    gate_label: knowledge:product-approved
+
+  architect:
+    layer: technical
+    path: docs/knowledge/technical/
+    approves_contract: TechnicalDesign
+    gate_label: knowledge:technical-approved
+    design_system_path: docs/knowledge/technical/design-system/
+
+gates:
+  architect_review:
+    after: product-spec-agent
+    before: technical-spec-agent
+    contract: ArchitectReviewDecision
+    label_pending: architect-gate:pending
+    label_approved: architect-gate:approved
+
+rules:
+  agents_may_draft: true
+  agents_may_write_canonical: false
+  approval_required_for_index: true

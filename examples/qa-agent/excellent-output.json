@@ -1,0 +1,16 @@
+{
+  "contract": "VerificationResult",
+  "version": "1.0",
+  "pr_number": 12,
+  "acceptance_criteria_verified": [true, true],
+  "tests_added": 2,
+  "tests": [
+    {
+      "path": "tests/delete-todo.test.js",
+      "content": "import { describe, it } from 'node:test';\nimport assert from 'node:assert';\n// ... asserts 404 on missing id"
+    }
+  ],
+  "edge_cases_covered": true,
+  "regression_risk": "low",
+  "ready_for_merge": true
+}

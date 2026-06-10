@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-platform/contracts/ReviewReport.v1.json",
+  "title": "ReviewReport",
+  "type": "object",
+  "required": [
+    "contract",
+    "version",
+    "pr_number",
+    "verdict",
+    "findings"
+  ],
+  "properties": {
+    "contract": {
+      "const": "ReviewReport"
+    },
+    "version": {
+      "const": "1.0"
+    },
+    "pr_number": {
+      "type": "integer"
+    },
+    "verdict": {
+      "type": "string"
+    },
+    "findings": {
+      "type": "array"
+    },
+    "spec_compliance": {
+      "type": "number"
+    }
+  },
+  "additionalProperties": true
+}

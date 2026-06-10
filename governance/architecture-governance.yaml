@@ -1,0 +1,29 @@
+# Architecture Governance — Blueprint v2.1
+version: "1.0.0"
+
+architecture_review:
+  design_gate:
+    name: Architect Review Gate
+    position: after product-spec-agent
+    actor: architect
+  code_gate:
+    name: architecture-review-agent
+    position: after implementation
+    before: review-agent
+
+adr_lifecycle:
+  states: [proposed, under_review, accepted, deprecated, superseded]
+  path: docs/knowledge/technical/adr/
+  template: governance/adr-template.md
+
+exception_process:
+  contract: ArchitectureException
+  approvers: [architect, tech-lead]
+
+technical_debt:
+  contract: TechnicalDebtItem
+  label: tech-debt:registered
+
+refactoring_workflow:
+  trigger_labels: [area:refactor, tech-debt:registered]
+  mandatory: [architect_review, architecture-review-agent]

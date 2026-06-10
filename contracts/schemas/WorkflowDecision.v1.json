@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-platform/contracts/WorkflowDecision.v1.json",
+  "title": "WorkflowDecision",
+  "type": "object",
+  "required": [
+    "contract",
+    "version",
+    "issue_id",
+    "risk_level",
+    "review_level"
+  ],
+  "properties": {
+    "contract": {
+      "const": "WorkflowDecision"
+    },
+    "version": {
+      "const": "1.0"
+    },
+    "issue_id": {
+      "type": "integer"
+    },
+    "risk_level": {
+      "type": "string"
+    },
+    "review_level": {
+      "type": "string"
+    },
+    "sdlc_path": {
+      "type": "array"
+    },
+    "mandatory_agents": {
+      "type": "array"
+    },
+    "skip_stages": {
+      "type": "array"
+    },
+    "human_gates": {
+      "type": "array"
+    }
+  },
+  "additionalProperties": true
+}

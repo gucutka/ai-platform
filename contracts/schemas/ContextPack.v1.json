@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-platform/contracts/ContextPack.v1.json",
+  "title": "ContextPack",
+  "type": "object",
+  "required": [
+    "contract",
+    "version",
+    "dispatch_id",
+    "target_agent",
+    "tier"
+  ],
+  "properties": {
+    "contract": {
+      "const": "ContextPack"
+    },
+    "version": {
+      "const": "1.0"
+    },
+    "dispatch_id": {
+      "type": "string"
+    },
+    "target_agent": {
+      "type": "string"
+    },
+    "tier": {
+      "type": "string"
+    },
+    "token_budget": {
+      "type": "object"
+    },
+    "sections": {
+      "type": "object"
+    },
+    "freshness": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}

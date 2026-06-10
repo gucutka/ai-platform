@@ -1,0 +1,4 @@
+skill_id: playwright
+version: "2.0.0"
+production_grade: true
+context_budget_tokens: 2000

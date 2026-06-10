@@ -1,0 +1,20 @@
+# AI Platform Manifest — control plane
+name: ai-platform
+version: "2.1.0"
+blueprint: "v2.1"
+
+compatibility:
+  contracts: ["1.0"]
+  agents: ">=1.0.0"
+  skills: ">=1.0.0"
+  context_pack: "1.0"
+
+github:
+  app_name: ai-platform-bot
+  default_branch: main
+
+runtimes:
+  - claude-cloud-agents
+  - claude-code
+
+orchestrator_ready: true

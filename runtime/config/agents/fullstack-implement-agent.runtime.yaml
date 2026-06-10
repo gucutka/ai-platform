@@ -1,0 +1,23 @@
+agent_id: fullstack-implement-agent
+enabled: true
+model: claude-opus-4-5
+max_tokens: 12288
+input_contracts:
+  - TriageResult@1.0
+  - ImplementationPlan@1.0
+output_contract: CodeChanges@1.0
+required_context:
+  - issue
+  - manifest
+  - plan
+  - code_files
+context_layers: [technical, code]
+skills:
+  core: [github-integration]
+  technology: [react, nextjs, nestjs, node-typescript]
+retry:
+  max_attempts: 3
+  backoff_ms: [30000, 120000, 300000]
+failure_handling:
+  escalate_to: tech-lead
+next_workflow: pr-create.yml

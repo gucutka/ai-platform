@@ -1,0 +1,7 @@
+contract: ContextPack
+version: "1.0"
+agent_id: context-builder-agent
+schema_ref: ../../../contracts/schemas/ContextPack.v1.json
+validation:
+  deterministic: ../../../contracts/rules/validation-rules.yaml
+  semantic: contract-validator-agent

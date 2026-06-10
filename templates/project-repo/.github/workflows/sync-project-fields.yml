@@ -1,0 +1,10 @@
+name: Sync Project Fields
+on:
+  issues:
+    types: [labeled]
+jobs:
+  sync:
+    uses: ${{ format('{0}/ai-platform/.github/workflows/sync-project-fields.yml@main', github.repository_owner) }}
+    with:
+      issue_number: ${{ github.event.issue.number }}
+    secrets: inherit

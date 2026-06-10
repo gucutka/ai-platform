@@ -1,0 +1,20 @@
+# Failure Recovery
+version: "1.0.0"
+
+retry:
+  max_attempts: 3
+  backoff: [30, 120, 300]
+  idempotency_key: "{project_id}:{issue_id}:{stage}:{attempt}"
+
+dlq:
+  enabled: true
+  after_retries: 3
+  notify: tech-lead
+
+checkpoint:
+  agents: [frontend-implement-agent, backend-implement-agent, fullstack-implement-agent, infra-implement-agent, migration-agent]
+  fields: [branch, commits, last_task_id]
+
+context_pack_cache:
+  reuse_on_retry: true
+  invalidate_on: [knowledge_merge, pr_sync]

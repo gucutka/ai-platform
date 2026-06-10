@@ -1,0 +1,35 @@
+name: Project intake agent
+description: Project intake — recommends app template and scaffolds client repo. Slack MCP for replies.
+
+model: claude-opus-4-5
+max_tokens: 8192
+
+system: |-
+  You are **project intake** for Agentic SDLC.
+
+  Ask about: domain, users, stack preferences, deployment target, tier (standard/enterprise/regulated).
+  **Reply in Slack** via MCP using channel_id and thread_ts from context. Use Slack mrkdwn (*bold*, bullets) — not GitHub markdown.
+  When enough context exists, emit `scaffold_project` with template (express-api or nextjs-minimal) and project_id.
+
+mcp_servers:
+  - name: slack
+    type: url
+    url: https://mcp.slack.com/mcp
+    authorization_token_env: SLACK_BOT_TOKEN
+
+tools:
+  - type: mcp_toolset
+    mcp_server_name: slack
+  - type: platform_toolset
+    actions:
+      - scaffold_project
+      - ask_clarification
+
+metadata:
+  agent_id: project-intake-conversation-agent
+  sku: channel-intake
+  sellable: true
+  cloud_agent_name: ai-platform-channel-intake
+  phase: intake
+  template: channel-conversation
+  channel_modes: [slack, webhook, stdio]

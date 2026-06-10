@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-platform/contracts/ValidationResult.v1.json",
+  "title": "ValidationResult",
+  "type": "object",
+  "required": [
+    "contract",
+    "version",
+    "issue_id",
+    "target_contract",
+    "agent_id",
+    "valid",
+    "errors",
+    "semantic_errors",
+    "validated_by"
+  ],
+  "properties": {
+    "contract": {
+      "const": "ValidationResult"
+    },
+    "version": {
+      "const": "1.0"
+    },
+    "issue_id": {
+      "type": "integer"
+    },
+    "target_contract": {
+      "type": "string"
+    },
+    "agent_id": {
+      "type": "string"
+    },
+    "valid": {
+      "type": "boolean"
+    },
+    "errors": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "semantic_errors": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "validated_by": {
+      "const": "contract-validator-agent"
+    }
+  },
+  "additionalProperties": false
+}

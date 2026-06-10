@@ -1,0 +1,89 @@
+name: Agent Dispatch
+on:
+  workflow_call:
+    inputs:
+      issue_number:
+        required: true
+        type: number
+      agent_id:
+        required: true
+        type: string
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: true
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        required: true
+        type: number
+      agent_id:
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: project
+
+      - uses: actions/checkout@v4
+        with:
+          path: platform
+
+      - uses: ./platform/.github/actions/setup-runtime
+        with:
+          platform-path: platform
+
+      - name: Run agent
+        id: run
+        working-directory: platform/runtime
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PROJECT_DIR: ${{ github.workspace }}/project
+          PLATFORM_ROOT: ${{ github.workspace }}/platform
+        run: |
+          set -e
+          node dist/cli.js dispatch --issue ${{ inputs.issue_number }} --agent ${{ inputs.agent_id }} 2>&1 | tee /tmp/out.txt
+          if grep -q '^NEXT_AGENT=' /tmp/out.txt; then
+            echo "next_agent=$(grep '^NEXT_AGENT=' /tmp/out.txt | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+          fi
+          if grep -q '^NEXT_WORKFLOW=' /tmp/out.txt; then
+            echo "next_workflow=$(grep '^NEXT_WORKFLOW=' /tmp/out.txt | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Chain workflow → full pipeline
+        if: inputs.agent_id == 'workflow-agent'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run pipeline.yml \
+            -f issue_number=${{ inputs.issue_number }} \
+            --repo "${{ github.repository }}"
+
+      - name: Chain plan → implement
+        if: inputs.agent_id == 'plan-agent' && steps.run.outputs.next_agent != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run agent-dispatch.yml \
+            -f issue_number=${{ inputs.issue_number }} \
+            -f agent_id=${{ steps.run.outputs.next_agent }} \
+            --repo "${{ github.repository }}"
+
+      - name: Chain implement → pr-create
+        if: inputs.agent_id == 'frontend-implement-agent' || inputs.agent_id == 'backend-implement-agent'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run pr-create.yml \
+            -f issue_number=${{ inputs.issue_number }} \
+            --repo "${{ github.repository }}"

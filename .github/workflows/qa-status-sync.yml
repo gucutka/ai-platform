@@ -1,0 +1,72 @@
+name: QA Status Sync
+on:
+  workflow_call:
+    inputs:
+      pr_number:
+        required: true
+        type: number
+      conclusion:
+        required: true
+        type: string
+  workflow_run:
+    workflows: ["Test"]
+    types: [completed]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_call' ||
+      (github.event.workflow_run.conclusion != 'cancelled' &&
+       github.event.workflow_run.conclusion != 'skipped')
+    steps:
+      - name: Checkout project (caller repo)
+        uses: actions/checkout@v4
+        with:
+          path: project
+
+      - name: Checkout AI Platform
+        uses: actions/checkout@v4
+        with:
+          path: platform
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Setup runtime
+        uses: ./platform/.github/actions/setup-runtime
+        with:
+          platform-path: platform
+
+      - name: Resolve PR and conclusion
+        id: pr
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_call" ]; then
+            echo "number=${{ inputs.pr_number }}" >> "$GITHUB_OUTPUT"
+            echo "conclusion=${{ inputs.conclusion }}" >> "$GITHUB_OUTPUT"
+          else
+            PRS='${{ toJson(github.event.workflow_run.pull_requests) }}'
+            NUMBER=$(echo "$PRS" | jq -r '.[0].number // empty')
+            if [ -z "$NUMBER" ]; then
+              echo "No PR linked to workflow_run — skipping" >&2
+              exit 0
+            fi
+            echo "number=$NUMBER" >> "$GITHUB_OUTPUT"
+            echo "conclusion=${{ github.event.workflow_run.conclusion }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sync QA labels → issue + project
+        if: steps.pr.outputs.number != ''
+        working-directory: platform/runtime
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PROJECT_DIR: ${{ github.workspace }}/project
+          PLATFORM_ROOT: ${{ github.workspace }}/platform
+        run: |
+          node dist/cli.js qa-status-sync \
+            --pr ${{ steps.pr.outputs.number }} \
+            --conclusion ${{ steps.pr.outputs.conclusion }}

@@ -1,0 +1,11 @@
+name: Issue Routing
+on:
+  issues:
+    types: [labeled]
+jobs:
+  route:
+    if: github.event.label.name == 'agent-route:pending'
+    uses: ${{ format('{0}/ai-platform/.github/workflows/issue-routing.yml@main', github.repository_owner) }}
+    with:
+      issue_number: ${{ github.event.issue.number }}
+    secrets: inherit

@@ -1,0 +1,24 @@
+name: Requirements agent
+description: Drafts business requirements from issue context and approved business knowledge. Pipeline one-shot agent.
+
+model: claude-opus-4-5
+max_tokens: 8192
+
+system: |-
+  You are the **requirements agent** for Agentic SDLC pipeline.
+
+  Read the issue, context pack, and approved business knowledge.
+  Emit BusinessRequirements@1.0 as structured JSON via the contract tool.
+  Do not invent requirements not supported by context. Flag gaps in open_questions.
+
+tools:
+  - type: contract_toolset
+    contract: BusinessRequirements@1.0
+
+metadata:
+  agent_id: requirements-agent
+  sku: sdlc-requirements
+  sellable: true
+  cloud_agent_name: ai-platform-requirements
+  output_contract: BusinessRequirements@1.0
+  template: sdlc-pipeline

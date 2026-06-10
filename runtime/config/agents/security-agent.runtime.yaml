@@ -1,0 +1,23 @@
+agent_id: security-agent
+enabled: true
+model: claude-opus-4-5
+max_tokens: 6000
+input_contracts:
+  - ReviewReport@1.0
+  - SastScanResult@1.0
+  - TriageResult@1.0
+output_contract: SecurityReport@1.0
+required_context:
+  - issue
+  - manifest
+  - pr_diff
+  - sast_results
+skills:
+  core: [github-integration]
+  sdlc: [security-review]
+retry:
+  max_attempts: 2
+  backoff_ms: [30000, 120000]
+failure_handling:
+  label: security-scan:failed
+verdict_values: [PASS, FAIL]

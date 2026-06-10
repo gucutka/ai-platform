@@ -1,0 +1,41 @@
+name: Knowledge Sync
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "docs/knowledge/**"
+      - ".ai-platform/knowledge/approvals.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.AI_PLATFORM_REPOSITORY || format('{0}/ai-platform', github.repository_owner) }}
+          path: ai-platform
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - uses: ./ai-platform/.github/actions/setup-runtime
+        with:
+          platform-path: ai-platform
+
+      - name: Build knowledge index
+        working-directory: ai-platform/runtime
+        env:
+          PROJECT_DIR: ${{ github.workspace }}
+          PLATFORM_ROOT: ${{ github.workspace }}/ai-platform
+        run: |
+          node dist/cli.js knowledge-sync --project-dir "$PROJECT_DIR"
+
+      - name: Upload knowledge index
+        uses: actions/upload-artifact@v4
+        with:
+          name: knowledge-index
+          path: .ai-platform/knowledge/
+          if-no-files-found: warn

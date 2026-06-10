@@ -1,0 +1,18 @@
+# Contract Versioning Rules
+version: "1.0.0"
+
+semver:
+  major: breaking schema change
+  minor: additive optional fields
+  patch: documentation only
+
+compatibility:
+  platform_2_1:
+    contracts: ["1.0"]
+    backward_compatible_minor: true
+
+deprecation:
+  notice_days: 90
+  dual_support_versions: 1
+
+naming: "{ContractName}.v{major}.json"

@@ -1,0 +1,27 @@
+# Retrieval Strategy — Context Builder Agent
+version: "1.0.0"
+
+stages:
+  triage:
+    layers: [business]
+    top_k: 5
+  requirements:
+    layers: [business]
+    top_k: 10
+  design:
+    layers: [business, product, technical]
+    top_k: 15
+  implementation:
+    layers: [product, technical, code]
+    top_k: 20
+    code_graph: true
+  architecture-review:
+    layers: [technical]
+    top_k: 20
+    include_adrs: accepted_only
+  review:
+    layers: [product, technical]
+    code: diff_only
+  qa:
+    layers: [business, product]
+    code: test_files_only

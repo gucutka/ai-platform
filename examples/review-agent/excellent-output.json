@@ -1,0 +1,19 @@
+{
+  "contract": "ReviewReport",
+  "version": "1.0",
+  "pr_number": 12,
+  "verdict": "FAIL",
+  "findings": [
+    {
+      "severity": "major",
+      "file": "src/server.js",
+      "line": 28,
+      "message": "DELETE does not return 404 when id missing — returns 200 with empty body",
+      "category": "correctness"
+    }
+  ],
+  "spec_compliance": 0.5,
+  "architecture_compliance": 1.0,
+  "ac_coverage": 0.5,
+  "summary": "AC requires 404 on missing todo; implementation always returns 204."
+}

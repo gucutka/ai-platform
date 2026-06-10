@@ -1,0 +1,24 @@
+{
+  "version": "1.0.0",
+  "project_statuses": [
+    "Backlog",
+    "Requirements",
+    "Discovery",
+    "Design",
+    "Implementation",
+    "Review",
+    "Verification",
+    "Ready For Merge",
+    "Merged",
+    "Released"
+  ],
+  "parallel_fields": {
+    "Blocked": "boolean",
+    "Risk": "single_select",
+    "Agent Route": "single_select"
+  },
+  "milestones": [
+    { "name": "Delivery Cycle", "description": "Active delivery iteration" },
+    { "name": "Release Next", "description": "Next client release train" }
+  ]
+}

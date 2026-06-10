@@ -1,0 +1,4 @@
+skill_id: node-typescript
+rules:
+  - id: present
+    check: skill.md exists

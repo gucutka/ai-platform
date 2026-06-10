@@ -1,0 +1,6 @@
+# GitHub Projects v2 sync — copy to .ai-platform/project-sync.yaml in client repos
+version: "1.0"
+enabled: true
+owner: YOUR_GITHUB_OWNER
+owner_type: organization
+project_number: 1

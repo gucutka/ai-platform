@@ -1,0 +1,39 @@
+# Skill Resolution Flow — Blueprint v2.1
+version: "1.0.0"
+
+always_load:
+  category: core
+  skills: all
+  max_tokens: 600
+  compression: required
+
+by_route:
+  risk_high:
+    add_sdlc: [security-review]
+  architect_review:
+    add_sdlc: [technical-design-format, impact-analysis]
+
+by_agent:
+  triage-agent: {sdlc: [issue-triage]}
+  requirements-agent: {sdlc: [user-story-format]}
+  product-spec-agent: {sdlc: [impact-analysis, acceptance-criteria-mapping]}
+  technical-spec-agent: {sdlc: [technical-design-format]}
+  plan-agent: {sdlc: [implementation-planning]}
+  frontend-implement-agent: {technology: [react, nextjs, storybook]}
+  backend-implement-agent: {technology: [nestjs, fastapi, node-typescript, postgres]}
+  fullstack-implement-agent: {technology: [react, nextjs, nestjs]}
+  infra-implement-agent: {technology: [terraform, aws, docker]}
+  architecture-review-agent: {sdlc: [technical-design-format]}
+  review-agent: {sdlc: [code-review]}
+  qa-agent: {sdlc: [test-generation, acceptance-criteria-mapping], technology: [playwright, jest]}
+  security-agent: {sdlc: [security-review]}
+  docs-agent: {sdlc: [release-notes-format], technology: [markdown-docs, openapi]}
+  release-agent: {sdlc: [release-notes-format]}
+
+by_project:
+  source: skills/project/_registry.yaml
+  max_skills: 2
+  max_tokens: 1000
+
+resolution_order: [core, sdlc, technology, project]
+drop_priority_on_overflow: [technology, sdlc_optional, project_last]

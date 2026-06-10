@@ -1,0 +1,55 @@
+# Agent Contract Model v1.0
+agent_id: product-spec-agent
+version: "1.0.0"
+type: sdlc
+phase: design
+responsibility: "Draft product spec for PA gate."
+
+inputs:
+  contracts:
+    - name: BusinessRequirements
+      version: "1.0"
+      required: true
+  github:
+    issue: true
+    pr: false
+  context_pack:
+    tier: T1
+    layers: [business, product, technical, code]
+
+outputs:
+  contracts:
+    - name: ProductSpec
+      version: "1.0"
+  github:
+    labels: []
+    comments: true
+    pr_actions: false
+
+skills:
+  sdlc: ['impact-analysis', 'acceptance-criteria-mapping']
+  technology: []
+  project: []
+
+constraints:
+  no_direct_retrieval: true
+  allowed_paths: from_manifest
+  max_output_tokens: 6000
+  runtime: cloud-agent
+  modes: [initial, fix, refactor]
+
+escalation:
+  conditions:
+    - condition: retry_exhausted
+      escalate_to: tech-lead
+      sla: 4h
+    - condition: arch_review_failed_high_risk
+      escalate_to: architect
+      sla: 8h
+  auto_block_labels: [agent-route:blocked]
+
+retry:
+  max_attempts: 3
+  backoff: exponential
+  retry_on: [transient_error, contract_validation_fail]
+  escalate_after: 3

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-platform/contracts/SecurityReport.v1.json",
+  "title": "SecurityReport",
+  "type": "object",
+  "required": [
+    "contract",
+    "version",
+    "pr_number",
+    "verdict",
+    "findings"
+  ],
+  "properties": {
+    "contract": {
+      "const": "SecurityReport"
+    },
+    "version": {
+      "const": "1.0"
+    },
+    "pr_number": {
+      "type": "integer"
+    },
+    "verdict": {
+      "type": "string"
+    },
+    "findings": {
+      "type": "array"
+    }
+  },
+  "additionalProperties": true
+}

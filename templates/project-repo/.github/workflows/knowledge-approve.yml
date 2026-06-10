@@ -1,0 +1,52 @@
+name: Knowledge Approve (KO gate)
+on:
+  workflow_dispatch:
+    inputs:
+      layer:
+        required: true
+        type: choice
+        options: [business, product, technical]
+      status:
+        required: true
+        type: choice
+        default: approved
+        options: [approved, draft]
+
+permissions:
+  contents: write
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.AI_PLATFORM_REPOSITORY || format('{0}/ai-platform', github.repository_owner) }}
+          path: ai-platform
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - uses: ./ai-platform/.github/actions/setup-runtime
+        with:
+          platform-path: ai-platform
+
+      - name: Update layer approval
+        working-directory: ai-platform/runtime
+        env:
+          PROJECT_DIR: ${{ github.workspace }}
+          PLATFORM_ROOT: ${{ github.workspace }}/ai-platform
+        run: |
+          node dist/cli.js knowledge-approve \
+            --layer "${{ inputs.layer }}" \
+            --status "${{ inputs.status }}" \
+            --project-dir "$PROJECT_DIR"
+
+      - name: Commit approvals + index
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .ai-platform/knowledge/
+          if git diff --staged --quiet; then exit 0; fi
+          git commit -m "chore(knowledge): ${{ inputs.layer }} → ${{ inputs.status }}"
+          git push

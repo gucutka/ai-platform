@@ -1,0 +1,10 @@
+version: "1.0"
+enabled: false
+provider: slack
+channel_id: dev-notifications
+
+events:
+  pr_created: true
+  review_pass: true
+  merged: true
+  released: true

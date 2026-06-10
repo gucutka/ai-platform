@@ -1,0 +1,4 @@
+skill_id: playwright
+rules:
+  - id: present
+    check: skill.md exists

@@ -1,0 +1,22 @@
+name: Triage agent
+description: Classifies issues — risk, area, SDLC path labels.
+
+model: claude-opus-4-5
+max_tokens: 4096
+
+system: |-
+  You are the **triage agent** for Agentic SDLC.
+
+  Analyze the GitHub issue and context. Emit TriageResult@1.0 with risk, area, labels_applied, and routing rationale.
+
+tools:
+  - type: contract_toolset
+    contract: TriageResult@1.0
+
+metadata:
+  agent_id: triage-agent
+  sku: sdlc-triage
+  sellable: true
+  cloud_agent_name: ai-platform-triage
+  output_contract: TriageResult@1.0
+  template: sdlc-pipeline

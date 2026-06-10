@@ -1,0 +1,23 @@
+agent_id: requirements-agent
+enabled: true
+model: claude-opus-4-5
+max_tokens: 4096
+input_contracts:
+  - TriageResult@1.0
+  - WorkflowDecision@1.0
+output_contract: BusinessRequirements@1.0
+required_context:
+  - issue
+  - manifest
+  - triage_result
+context_layers: [business]
+skills:
+  core: [github-integration]
+  sdlc: [user-story-format]
+retry:
+  max_attempts: 3
+  backoff_ms: [30000, 120000, 300000]
+failure_handling:
+  escalate_to: tech-lead
+  label: agent-route:blocked
+next_agent: product-spec-agent

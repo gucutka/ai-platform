@@ -1,0 +1,4 @@
+skill_id: test-generation
+rules:
+  - id: present
+    check: skill.md exists

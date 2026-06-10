@@ -1,0 +1,4 @@
+skill_id: react
+rules:
+  - id: present
+    check: skill.md exists

@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "HandoffSummary@1.0",
+  "title": "HandoffSummary",
+  "type": "object",
+  "required": [
+    "contract",
+    "version",
+    "issue_id",
+    "from_agent",
+    "to_agent",
+    "stage",
+    "summary",
+    "contracts_passed",
+    "timestamp"
+  ],
+  "properties": {
+    "contract": { "const": "HandoffSummary" },
+    "version": { "const": "1.0" },
+    "issue_id": { "type": "integer" },
+    "from_agent": { "type": "string" },
+    "to_agent": { "type": "string" },
+    "stage": { "type": "string" },
+    "summary": { "type": "string" },
+    "contracts_passed": { "type": "array", "items": { "type": "string" } },
+    "timestamp": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
+}

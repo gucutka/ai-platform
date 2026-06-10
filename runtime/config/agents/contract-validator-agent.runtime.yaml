@@ -1,0 +1,15 @@
+agent_id: contract-validator-agent
+enabled: true
+model: deterministic
+max_tokens: 0
+input_contracts: []
+output_contract: ValidationResult@1.0
+required_context: []
+skills:
+  core: [contract-validation]
+retry:
+  max_attempts: 1
+  backoff_ms: []
+failure_handling:
+  escalate_to: tech-lead
+  label: agent-route:blocked

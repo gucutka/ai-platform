@@ -1,0 +1,47 @@
+# Human Escalation Rules
+version: "1.0.0"
+
+triggers:
+  - id: requirements_conflict
+    condition: BA rejects BusinessRequirements
+    escalate_to: [business-analyst, engineering-manager]
+    sla: 8h
+
+  - id: architect_gate_rejected
+    condition: ArchitectReviewDecision rejected
+    escalate_to: [architect, product-analyst]
+    sla: 8h
+
+  - id: arch_review_failed_high
+    condition: ArchitectureReviewReport verdict failed AND risk high
+    escalate_to: [architect, tech-lead]
+    sla: 8h
+
+  - id: security_critical
+    condition: SecurityReport critical finding
+    escalate_to: [security-owner]
+    sla: 2h
+
+  - id: budget_exceeded
+    condition: token_usage > 100% budget
+    escalate_to: [engineering-manager]
+    sla: 4h
+
+  - id: agent_failure
+    condition: retry_count >= 3
+    escalate_to: [tech-lead]
+    sla: 4h
+
+  - id: blocked_24h
+    condition: agent-route:blocked AND age > 24h
+    escalate_to: [engineering-manager]
+    sla: 8h
+
+  - id: platform_version_mismatch
+    condition: manifest incompatible
+    escalate_to: [platform-owner, platform-architect]
+    sla: 24h
+
+labels:
+  blocked: agent-route:blocked
+  human_review: human-review:required

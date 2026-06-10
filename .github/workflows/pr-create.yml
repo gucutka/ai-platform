@@ -1,0 +1,60 @@
+name: PR Create
+on:
+  workflow_call:
+    inputs:
+      issue_number:
+        required: true
+        type: number
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: false
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        required: true
+        type: number
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    outputs:
+      pr_number: ${{ steps.pr.outputs.pr_number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: project
+
+      - uses: actions/checkout@v4
+        with:
+          path: platform
+
+      - uses: ./platform/.github/actions/setup-runtime
+        with:
+          platform-path: platform
+
+      - name: Create branch, commit, PR
+        id: pr
+        working-directory: platform/runtime
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PROJECT_DIR: ${{ github.workspace }}/project
+          PLATFORM_ROOT: ${{ github.workspace }}/platform
+        run: |
+          node dist/cli.js pr-create --issue ${{ inputs.issue_number }} 2>&1 | tee /tmp/out.txt
+          PR=$(grep '^PR_NUMBER=' /tmp/out.txt | cut -d= -f2)
+          echo "pr_number=$PR" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run review.yml \
+            -f issue_number=${{ inputs.issue_number }} \
+            -f pr_number=${{ steps.pr.outputs.pr_number }} \
+            --repo "${{ github.repository }}"

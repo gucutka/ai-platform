@@ -1,0 +1,31 @@
+# Agent Registry — Blueprint v2.1
+version: "1.0.0"
+platform_version: "2.1.0"
+
+meta:
+  - workflow-agent
+  - context-builder-agent
+  - contract-validator-agent
+  - handoff-summarizer-agent
+
+sdlc:
+  - triage-agent
+  - requirements-agent
+  - product-spec-agent
+  - technical-spec-agent
+  - plan-agent
+  - frontend-implement-agent
+  - backend-implement-agent
+  - fullstack-implement-agent
+  - infra-implement-agent
+  - architecture-review-agent
+  - review-agent
+  - qa-agent
+  - security-agent
+  - docs-agent
+  - release-agent
+
+on_demand:
+  - migration-agent
+
+total_agents: 20

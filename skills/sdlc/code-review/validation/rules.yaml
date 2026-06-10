@@ -1,0 +1,4 @@
+skill_id: code-review
+rules:
+  - id: present
+    check: skill.md exists

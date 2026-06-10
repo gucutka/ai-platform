@@ -1,0 +1,33 @@
+# SDLC Routing Rules — consumed by workflow-agent
+version: "1.0.0"
+
+paths:
+  low_risk:
+    risk: [low]
+    sdlc_path: [implementation, architecture-review, review, merge]
+    skip_stages: [discovery, design, qa, security]
+    mandatory_agents: [frontend-implement-agent, backend-implement-agent, fullstack-implement-agent, infra-implement-agent, architecture-review-agent, review-agent]
+
+  medium_feature:
+    risk: [medium]
+    sdlc_path: [requirements, discovery, design, implementation, architecture-review, review, verification, merge]
+    mandatory_agents: [requirements-agent, product-spec-agent, technical-spec-agent, plan-agent, architecture-review-agent, review-agent, qa-agent]
+
+  high_risk:
+    risk: [high]
+    sdlc_path: [requirements, discovery, design, implementation, architecture-review, review, verification, security, merge, documentation, release]
+    mandatory_agents: all_sdlc
+    review_level: strict
+
+implement_routing:
+  area_frontend: frontend-implement-agent
+  area_backend: backend-implement-agent
+  area_fullstack: fullstack-implement-agent
+  area_infra: infra-implement-agent
+
+arch_review_skip:
+  - risk:low AND area:docs AND no_code_changes
+  - risk:low AND type:chore AND single_config_file
+
+architect_gate_skip:
+  - risk:low AND type:chore AND no_product_spec

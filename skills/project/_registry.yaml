@@ -1,0 +1,8 @@
+# Project Skills Registry
+version: "1.0.0"
+projects: {}
+# Example:
+#   client-a-ecommerce:
+#     skills:
+#       - id: client-a-conventions
+#         path: docs/knowledge/_skills/client-a-conventions/SKILL.md

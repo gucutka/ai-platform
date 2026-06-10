@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-platform/contracts/MergeRecord.v1.json",
+  "title": "MergeRecord",
+  "type": "object",
+  "required": [
+    "contract",
+    "version",
+    "issue_id",
+    "pr_number",
+    "merged_by"
+  ],
+  "properties": {
+    "contract": {
+      "const": "MergeRecord"
+    },
+    "version": {
+      "const": "1.0"
+    },
+    "issue_id": {
+      "type": "integer"
+    },
+    "pr_number": {
+      "type": "integer"
+    },
+    "merged_by": {
+      "type": "string"
+    },
+    "merge_sha": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,17 @@
+name: Pipeline Resume
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        required: true
+        type: number
+      from_agent:
+        required: false
+        type: string
+jobs:
+  resume:
+    uses: ${{ format('{0}/ai-platform/.github/workflows/pipeline-resume.yml@main', github.repository_owner) }}
+    with:
+      issue_number: ${{ inputs.issue_number }}
+      from_agent: ${{ inputs.from_agent }}
+    secrets: inherit

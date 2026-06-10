@@ -1,0 +1,30 @@
+# Skill Registry — Blueprint v2.1
+version: "1.0.0"
+platform_version: "2.1.0"
+
+categories:
+  core:
+    - contract-validation
+    - github-integration
+    - retrieval
+    - knowledge-layer-access
+    - escalation-protocols
+  sdlc:
+    - issue-triage
+    - user-story-format
+    - impact-analysis
+    - acceptance-criteria-mapping
+    - technical-design-format
+    - implementation-planning
+    - code-review
+    - test-generation
+    - security-review
+    - release-notes-format
+  technology:
+    frontend: [react, nextjs, storybook]
+    backend: [nestjs, fastapi, node-typescript]
+    infrastructure: [terraform, aws, docker]
+    database: [postgres, redis]
+    testing: [playwright, jest]
+    documentation: [openapi, markdown-docs]
+  project: []  # populated per project via _registry.yaml

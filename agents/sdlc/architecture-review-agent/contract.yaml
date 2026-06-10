@@ -1,0 +1,7 @@
+contract: ArchitectureReviewReport
+version: "1.0"
+agent_id: architecture-review-agent
+schema_ref: ../../../contracts/schemas/ArchitectureReviewReport.v1.json
+validation:
+  deterministic: ../../../contracts/rules/validation-rules.yaml
+  semantic: contract-validator-agent

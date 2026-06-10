@@ -1,0 +1,47 @@
+name: GitHub App Token
+description: Resolve installation token (App) or fall back to GITHUB_TOKEN
+outputs:
+  token:
+    description: GitHub API token
+    value: ${{ steps.token.outputs.token }}
+  mode:
+    description: Auth mode (app | pat | actions)
+    value: ${{ steps.token.outputs.mode }}
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      id: token
+      working-directory: ${{ inputs.platform-path }}/runtime
+      env:
+        GITHUB_APP_ID: ${{ inputs.app-id }}
+        GITHUB_APP_PRIVATE_KEY: ${{ inputs.app-private-key }}
+        GITHUB_APP_INSTALLATION_ID: ${{ inputs.installation-id }}
+        GITHUB_TOKEN: ${{ inputs.fallback-token }}
+        GH_PAT: ${{ inputs.fallback-token }}
+      run: |
+        OUT=$(node dist/cli.js github-token 2>/dev/null || true)
+        TOKEN=$(echo "$OUT" | grep '^GITHUB_TOKEN=' | cut -d= -f2-)
+        MODE=$(echo "$OUT" | grep '^GITHUB_AUTH_MODE=' | cut -d= -f2-)
+        if [ -z "$TOKEN" ]; then
+          TOKEN="${{ inputs.fallback-token }}"
+          MODE="actions"
+        fi
+        echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+        echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+inputs:
+  platform-path:
+    description: Path to ai-platform checkout
+    required: true
+  app-id:
+    description: GitHub App ID
+    required: false
+  app-private-key:
+    description: GitHub App private key PEM
+    required: false
+  installation-id:
+    description: Installation ID for target org/repo
+    required: false
+  fallback-token:
+    description: PAT or GITHUB_TOKEN when App not configured
+    required: true

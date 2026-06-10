@@ -1,0 +1,22 @@
+# Audit Trail
+version: "1.0.0"
+
+storage:
+  type: append_only
+  policy: WORM
+  partition_by: project_id
+
+event_fields:
+  - timestamp
+  - actor
+  - actor_type
+  - event
+  - issue_id
+  - pr_number
+  - contract_hash
+  - context_pack_hash
+  - workflow_decision_hash
+  - token_usage
+  - escalation_id
+
+display_layer: github_issue_comments

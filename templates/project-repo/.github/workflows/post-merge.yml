@@ -1,0 +1,57 @@
+name: Post-merge SDLC
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        required: true
+        type: number
+      pr_number:
+        required: true
+        type: number
+      merge_sha:
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  post-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.AI_PLATFORM_REPOSITORY || format('{0}/ai-platform', github.repository_owner) }}
+          path: ai-platform
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - uses: ./ai-platform/.github/actions/setup-runtime
+        with:
+          platform-path: ai-platform
+
+      - name: Run post-merge
+        working-directory: ai-platform/runtime
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PROJECT_DIR: ${{ github.workspace }}
+          PLATFORM_ROOT: ${{ github.workspace }}/ai-platform
+        run: |
+          node dist/cli.js post-merge \
+            --issue ${{ inputs.issue_number }} \
+            --pr ${{ inputs.pr_number }} \
+            --merge-sha "${{ inputs.merge_sha }}" \
+            --project-dir "$PROJECT_DIR"
+
+      - name: Commit docs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md README.md 2>/dev/null || true
+          if git diff --staged --quiet; then exit 0; fi
+          git commit -m "docs: post-merge issue #${{ inputs.issue_number }}"
+          git push

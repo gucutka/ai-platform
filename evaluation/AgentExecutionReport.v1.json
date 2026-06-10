@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentExecutionReport",
+  "type": "object",
+  "required": [
+    "contract",
+    "version",
+    "agent",
+    "task",
+    "duration_ms",
+    "tokens_used",
+    "agent_score"
+  ],
+  "properties": {
+    "contract": { "const": "AgentExecutionReport" },
+    "version": { "const": "1.0" },
+    "agent": { "type": "string" },
+    "task": { "type": "string" },
+    "issue_id": { "type": "integer" },
+    "duration_ms": { "type": "number" },
+    "tokens_used": {
+      "type": "object",
+      "properties": {
+        "input": { "type": "number" },
+        "output": { "type": "number" }
+      }
+    },
+    "files_changed": { "type": "integer" },
+    "tests_generated": { "type": "integer" },
+    "review_comments": { "type": "integer" },
+    "review_failures": { "type": "integer" },
+    "qa_failures": { "type": "integer" },
+    "security_findings": { "type": "integer" },
+    "accepted_pr": { "type": "boolean" },
+    "human_rework_required": { "type": "boolean" },
+    "agent_score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "score_breakdown": { "type": "object" },
+    "what_worked": { "type": "array" },
+    "what_failed": { "type": "array" },
+    "root_cause": { "type": ["string", "null"] },
+    "recommended_improvements": { "type": "array" },
+    "timestamp": { "type": "string" }
+  }
+}

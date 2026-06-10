@@ -1,0 +1,24 @@
+agent_id: architecture-review-agent
+enabled: true
+model: claude-opus-4-5
+max_tokens: 4096
+input_contracts:
+  - ImplementationResult@1.0
+  - TechnicalDesign@1.0
+  - TriageResult@1.0
+output_contract: ArchitectureReviewReport@1.0
+required_context:
+  - issue
+  - manifest
+  - technical_design
+  - pr_diff
+  - architectural_rules
+skills:
+  core: [github-integration]
+  sdlc: [technical-design-format]
+retry:
+  max_attempts: 3
+  backoff_ms: [30000, 120000, 300000]
+failure_handling:
+  label: arch-review:failed
+verdict_values: [PASS, FAIL, BLOCK]

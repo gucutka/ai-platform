@@ -1,0 +1,28 @@
+# Unified Agent Contract Model v1.0 — Blueprint v2.1
+version: "1.0.0"
+
+required_fields:
+  - agent_id
+  - version
+  - type
+  - phase
+  - responsibility
+  - inputs
+  - outputs
+  - skills
+  - constraints
+  - escalation
+  - retry
+
+per_agent_files:
+  - agent.yaml
+  - agent.md
+  - contract.yaml
+  - prompt.md
+  - routing.md
+
+types: [meta, sdlc, on-demand]
+
+context_invariant:
+  sdlc_agents_no_direct_retrieval: true
+  context_via: context-builder-agent

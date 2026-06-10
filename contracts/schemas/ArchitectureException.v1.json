@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-platform/contracts/ArchitectureException.v1.json",
+  "title": "ArchitectureException",
+  "type": "object",
+  "required": [
+    "contract",
+    "version",
+    "issue_id",
+    "adr_violated",
+    "justification"
+  ],
+  "properties": {
+    "contract": {
+      "const": "ArchitectureException"
+    },
+    "version": {
+      "const": "1.0"
+    },
+    "issue_id": {
+      "type": "integer"
+    },
+    "adr_violated": {
+      "type": "string"
+    },
+    "justification": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string"
+    },
+    "approved_by": {
+      "type": "array"
+    }
+  },
+  "additionalProperties": true
+}

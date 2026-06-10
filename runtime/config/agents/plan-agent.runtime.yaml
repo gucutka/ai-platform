@@ -1,0 +1,22 @@
+agent_id: plan-agent
+enabled: true
+model: claude-opus-4-5
+max_tokens: 4096
+input_contracts:
+  - TriageResult@1.0
+  - WorkflowDecision@1.0
+output_contract: ImplementationPlan@1.0
+required_context:
+  - issue
+  - manifest
+  - triage_result
+context_layers: [product, technical]
+skills:
+  core: [github-integration]
+  sdlc: [implementation-planning]
+retry:
+  max_attempts: 3
+  backoff_ms: [30000, 120000, 300000]
+failure_handling:
+  escalate_to: tech-lead
+next_agent: dynamic  # frontend-implement-agent | backend-implement-agent

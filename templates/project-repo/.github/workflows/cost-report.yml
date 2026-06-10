@@ -1,0 +1,9 @@
+name: Cost Report
+on:
+  schedule:
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+jobs:
+  report:
+    uses: ${{ format('{0}/ai-platform/.github/workflows/cost-report.yml@main', github.repository_owner) }}
+    secrets: inherit

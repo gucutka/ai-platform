@@ -1,0 +1,20 @@
+agent_id: workflow-agent
+enabled: true
+model: claude-opus-4-5
+max_tokens: 4096
+input_contracts:
+  - TriageResult@1.0
+output_contract: WorkflowDecision@1.0
+required_context:
+  - issue
+  - manifest
+  - triage_result
+skills:
+  core: [github-integration]
+retry:
+  max_attempts: 2
+  backoff_ms: [5000, 15000]
+failure_handling:
+  escalate_to: tech-lead
+  label: agent-route:blocked
+next_agent: dynamic

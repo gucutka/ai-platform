@@ -1,0 +1,38 @@
+name: Feature
+description: New feature with Agentic SDLC workflow
+title: "[Feature]: "
+labels: ["agent-route:pending", "priority:p2"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Knowledge Owners: BA (business), PA (product), Architect (technical).
+        Workflow Agent will assign SDLC path after triage.
+  - type: textarea
+    id: user_story
+    attributes:
+      label: User Story
+      description: As a [persona], I want [goal], so that [benefit]
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Testable criteria (BA-owned)
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options: ["p0", "p1", "p2", "p3"]
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: ["frontend", "backend", "fullstack", "infra", "unknown"]
+    validations:
+      required: true

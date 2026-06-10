@@ -1,0 +1,87 @@
+name: Cost Report
+on:
+  workflow_call:
+    inputs:
+      project_id:
+        required: false
+        type: string
+      month:
+        required: false
+        type: string
+  schedule:
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+    inputs:
+      month:
+        description: Period YYYY-MM (default current month)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout project (caller repo)
+        uses: actions/checkout@v4
+        with:
+          path: project
+
+      - name: Checkout AI Platform
+        uses: actions/checkout@v4
+        with:
+          path: platform
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Setup runtime
+        uses: ./platform/.github/actions/setup-runtime
+        with:
+          platform-path: platform
+
+      - name: Restore audit trace
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ai-platform-trace-issue-*
+          merge-multiple: true
+          path: project/.ai-platform
+
+      - name: Generate cost report
+        id: cost
+        working-directory: platform/runtime
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PROJECT_DIR: ${{ github.workspace }}/project
+          PLATFORM_ROOT: ${{ github.workspace }}/platform
+        run: |
+          MONTH="${{ inputs.month || github.event.inputs.month || '' }}"
+          CMD="node dist/cli.js cost-report"
+          if [ -n "$MONTH" ]; then CMD="$CMD --month $MONTH"; fi
+          eval "$CMD"
+
+      - name: Upload cost report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cost-report-${{ github.run_id }}
+          path: project/.ai-platform/cost/
+          retention-days: 365
+          if-no-files-found: warn
+
+      - name: Optional S3 audit export
+        if: vars.AUDIT_EXPORT_S3_BUCKET != ''
+        working-directory: platform/runtime
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+          PROJECT_DIR: ${{ github.workspace }}/project
+          PLATFORM_ROOT: ${{ github.workspace }}/platform
+        run: |
+          MONTH="${{ inputs.month || github.event.inputs.month || '' }}"
+          CMD="node dist/cli.js audit-export --s3-bucket ${{ vars.AUDIT_EXPORT_S3_BUCKET }}"
+          if [ -n "$MONTH" ]; then CMD="$CMD --month $MONTH"; fi
+          eval "$CMD"

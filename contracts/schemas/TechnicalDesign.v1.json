@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-platform/contracts/TechnicalDesign.v1.json",
+  "title": "TechnicalDesign",
+  "type": "object",
+  "required": [
+    "contract",
+    "version",
+    "issue_id",
+    "modules",
+    "adr_references"
+  ],
+  "properties": {
+    "contract": {
+      "const": "TechnicalDesign"
+    },
+    "version": {
+      "const": "1.0"
+    },
+    "issue_id": {
+      "type": "integer"
+    },
+    "modules": {
+      "type": "array"
+    },
+    "adr_references": {
+      "type": "array"
+    },
+    "api_contracts": {
+      "type": "array"
+    },
+    "constraints": {
+      "type": "array"
+    },
+    "status": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

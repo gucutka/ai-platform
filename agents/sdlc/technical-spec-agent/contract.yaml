@@ -1,0 +1,7 @@
+contract: TechnicalDesign
+version: "1.0"
+agent_id: technical-spec-agent
+schema_ref: ../../../contracts/schemas/TechnicalDesign.v1.json
+validation:
+  deterministic: ../../../contracts/rules/validation-rules.yaml
+  semantic: contract-validator-agent

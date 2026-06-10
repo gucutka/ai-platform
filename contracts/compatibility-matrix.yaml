@@ -1,0 +1,35 @@
+# Agent input contract compatibility — enforced before dispatch
+version: "1.0.0"
+
+platform_version: "2.1.0"
+contract_versions: ["1.0"]
+
+agents:
+  triage-agent:
+    inputs: []
+  workflow-agent:
+    inputs: [TriageResult@1.0]
+  requirements-agent:
+    inputs: [TriageResult@1.0, WorkflowDecision@1.0]
+  product-spec-agent:
+    inputs: [TriageResult@1.0, BusinessRequirements@1.0]
+  technical-spec-agent:
+    inputs: [TriageResult@1.0, ProductSpec@1.0]
+  plan-agent:
+    inputs: [TriageResult@1.0, WorkflowDecision@1.0]
+  frontend-implement-agent:
+    inputs: [TriageResult@1.0, ImplementationPlan@1.0]
+  backend-implement-agent:
+    inputs: [TriageResult@1.0, ImplementationPlan@1.0]
+  fullstack-implement-agent:
+    inputs: [TriageResult@1.0, ImplementationPlan@1.0]
+  infra-implement-agent:
+    inputs: [TriageResult@1.0, ImplementationPlan@1.0]
+  migration-agent:
+    inputs: [TriageResult@1.0]
+  architecture-review-agent:
+    inputs: [ImplementationResult@1.0, TechnicalDesign@1.0, TriageResult@1.0]
+  review-agent:
+    inputs: [TriageResult@1.0, ImplementationPlan@1.0, VerificationResult@1.0]
+  qa-agent:
+    inputs: [CodeChanges@1.0]

@@ -1,0 +1,211 @@
+# Claude Cloud Managed Agents — commercial catalog
+version: "1.0.0"
+platform_version: "2.1.0"
+
+defaults:
+  model: claude-opus-4-5
+  runtime: cloud-agent
+  max_concurrent:
+    standard: 20
+    enterprise: 50
+    regulated: 10
+
+agents:
+  triage-agent:
+    sku: sdlc-triage
+    sellable: true
+    tier: meta
+    channel_modes: [github, slack]
+    agent: agents/triage-agent.agent.yaml
+
+  requirements-agent:
+    sku: sdlc-requirements
+    sellable: true
+    tier: sdlc
+    channel_modes: [github, slack]
+    agent: agents/requirements-agent.agent.yaml
+
+  product-spec-agent:
+    sku: sdlc-product-spec
+    sellable: true
+    tier: sdlc
+    channel_modes: [github, slack]
+    agent: agents/product-spec-agent.agent.yaml
+
+  technical-spec-agent:
+    sku: sdlc-technical-spec
+    sellable: true
+    tier: sdlc
+    channel_modes: [github, slack]
+    agent: agents/technical-spec-agent.agent.yaml
+
+  plan-agent:
+    sku: sdlc-plan
+    sellable: true
+    tier: sdlc
+    channel_modes: [github]
+    agent: agents/plan-agent.agent.yaml
+
+  workflow-agent:
+    sku: sdlc-workflow
+    sellable: false
+    tier: meta
+    channel_modes: [github]
+    agent: agents/workflow-agent.agent.yaml
+
+  frontend-implement-agent:
+    sku: sdlc-implement-frontend
+    sellable: true
+    tier: implement
+    channel_modes: [github]
+    agent: agents/frontend-implement-agent.agent.yaml
+
+  backend-implement-agent:
+    sku: sdlc-implement-backend
+    sellable: true
+    tier: implement
+    channel_modes: [github]
+    agent: agents/backend-implement-agent.agent.yaml
+
+  review-agent:
+    sku: sdlc-review
+    sellable: true
+    tier: quality
+    channel_modes: [github]
+    agent: agents/review-agent.agent.yaml
+
+  qa-agent:
+    sku: sdlc-qa
+    sellable: true
+    tier: quality
+    channel_modes: [github]
+    agent: agents/qa-agent.agent.yaml
+
+  security-agent:
+    sku: sdlc-security
+    sellable: true
+    tier: quality
+    channel_modes: [github]
+    agent: agents/security-agent.agent.yaml
+
+  project-intake-conversation-agent:
+    sku: channel-intake
+    sellable: true
+    tier: channel
+    channel_modes: [slack, webhook, stdio]
+    agent: agents/project-intake-conversation-agent.agent.yaml
+
+  requirements-conversation-agent:
+    sku: channel-ba
+    sellable: true
+    tier: channel
+    channel_modes: [slack, webhook, stdio]
+    agent: agents/requirements-conversation-agent.agent.yaml
+
+  architecture-conversation-agent:
+    sku: channel-architect
+    sellable: true
+    tier: channel
+    channel_modes: [slack, webhook, stdio]
+    agent: agents/architecture-conversation-agent.agent.yaml
+
+  feature-intake-conversation-agent:
+    sku: channel-feature-intake
+    sellable: true
+    tier: channel
+    channel_modes: [slack, webhook, stdio]
+    agent: agents/feature-intake-conversation-agent.agent.yaml
+
+packages:
+  ba-pack:
+    label: Business Analysis Pack
+    agents: [requirements-agent, product-spec-agent]
+  architect-pack:
+    label: Architecture Pack
+    agents: [technical-spec-agent, plan-agent]
+  full-sdlc:
+    label: Full SDLC
+    agents:
+      - triage-agent
+      - requirements-agent
+      - product-spec-agent
+      - technical-spec-agent
+      - plan-agent
+      - backend-implement-agent
+      - frontend-implement-agent
+      - review-agent
+      - qa-agent
+  channel-pack:
+    label: Channel conversation pack
+    agents:
+      - project-intake-conversation-agent
+      - requirements-conversation-agent
+      - architecture-conversation-agent
+      - feature-intake-conversation-agent
+
+# Reference list pricing (sales / billing attribution — not enforced at runtime)
+commercial:
+  currency: USD
+  billing_unit: estimated_tokens
+
+  packages:
+    ba-pack:
+      label: Business Analysis as a Service
+      list_price_usd_per_month: 249
+      description: Requirements + product spec agents for GitHub pipeline
+    architect-pack:
+      label: Architecture Pack
+      list_price_usd_per_month: 299
+      description: Technical spec + implementation planning
+    channel-pack:
+      label: Conversational Pre-Dev
+      list_price_usd_per_month: 199
+      description: Slack/webhook intake, BA, architect, feature intake agents
+    full-sdlc:
+      label: Full SDLC Pack
+      list_price_usd_per_month: 1499
+      description: End-to-end pipeline agents through QA
+
+  skus:
+    sdlc-triage:
+      label: Triage Agent
+      list_price_usd_per_month: 49
+    sdlc-requirements:
+      label: Requirements Agent
+      list_price_usd_per_month: 149
+    sdlc-product-spec:
+      label: Product Spec Agent
+      list_price_usd_per_month: 149
+    sdlc-technical-spec:
+      label: Technical Spec Agent
+      list_price_usd_per_month: 179
+    sdlc-plan:
+      label: Plan Agent
+      list_price_usd_per_month: 129
+    sdlc-implement-backend:
+      label: Backend Implement Agent
+      list_price_usd_per_month: 199
+    sdlc-implement-frontend:
+      label: Frontend Implement Agent
+      list_price_usd_per_month: 199
+    sdlc-review:
+      label: Code Review Agent
+      list_price_usd_per_month: 99
+    sdlc-qa:
+      label: QA Agent
+      list_price_usd_per_month: 99
+    sdlc-security:
+      label: Security Agent
+      list_price_usd_per_month: 129
+    channel-intake:
+      label: Project Intake (conversation)
+      list_price_usd_per_month: 49
+    channel-ba:
+      label: BA Conversation Agent
+      list_price_usd_per_month: 79
+    channel-architect:
+      label: Architect Conversation Agent
+      list_price_usd_per_month: 79
+    channel-feature-intake:
+      label: Feature Intake Agent
+      list_price_usd_per_month: 59

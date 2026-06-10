@@ -1,0 +1,85 @@
+name: Webhook Receiver
+on:
+  repository_dispatch:
+    types: [ai-platform-webhook]
+  workflow_dispatch:
+    inputs:
+      payload_file:
+        description: Path to webhook JSON payload (in repo)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  receive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: project
+
+      - uses: actions/checkout@v4
+        with:
+          path: platform
+
+      - uses: ./platform/.github/actions/setup-runtime
+        with:
+          platform-path: platform
+
+      - name: Resolve GitHub token
+        id: gh
+        uses: ./platform/.github/actions/github-app-token
+        with:
+          platform-path: platform
+          app-id: ${{ secrets.GITHUB_APP_ID }}
+          app-private-key: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
+          installation-id: ${{ secrets.GITHUB_APP_INSTALLATION_ID }}
+          fallback-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Parse webhook payload
+        id: webhook
+        working-directory: platform/runtime
+        env:
+          AI_PLATFORM_WEBHOOK_SECRET: ${{ secrets.AI_PLATFORM_WEBHOOK_SECRET }}
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo '${{ toJson(github.event.client_payload) }}' > /tmp/webhook.json
+            EVENT="${{ github.event.client_payload.event || 'issues' }}"
+          else
+            FILE="${{ inputs.payload_file }}"
+            cp "$FILE" /tmp/webhook.json
+            EVENT="issues"
+          fi
+          node dist/cli.js webhook-receive \
+            --payload-file /tmp/webhook.json \
+            --event "$EVENT" \
+            2>&1 | tee /tmp/webhook-out.txt
+          if grep -q WEBHOOK_NOOP /tmp/webhook-out.txt; then
+            echo "noop=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "workflow=$(grep '^WEBHOOK_WORKFLOW=' /tmp/webhook-out.txt | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+          echo "issue=$(grep '^WEBHOOK_ISSUE=' /tmp/webhook-out.txt | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch issue routing
+        if: steps.webhook.outputs.workflow == 'issue-routing.yml'
+        env:
+          GH_TOKEN: ${{ steps.gh.outputs.token }}
+        run: |
+          gh workflow run issue-routing.yml \
+            -f issue_number=${{ steps.webhook.outputs.issue }} \
+            --repo "${{ github.repository }}"
+
+      - name: Dispatch project sync
+        if: steps.webhook.outputs.workflow == 'sync-project-fields.yml'
+        env:
+          GH_TOKEN: ${{ steps.gh.outputs.token }}
+        run: |
+          gh workflow run sync-project-fields.yml \
+            -f issue_number=${{ steps.webhook.outputs.issue }} \
+            --repo "${{ github.repository }}"

@@ -1,0 +1,45 @@
+# ContextPack v1 Specification
+contract: ContextPack
+version: "1.0"
+producer: context-builder-agent
+
+token_budget:
+  T0: 2000
+  T1: 7000
+  T2: 16000
+  T3: 28000
+
+sections:
+  base_context:
+    tokens: [400, 700]
+    content: [agent_role, constraints, artifact_refs, issue_pr_metadata]
+  workflow_summary:
+    tokens: [100, 200]
+  handoff_summary:
+    tokens_max: 500
+  dynamic_skills:
+    tokens: [600, 1200]
+    cap_percent_of_pack: 15
+  retrieved_knowledge:
+    tokens: [1500, 4000]
+  retrieved_code:
+    tokens: [3000, 10000]
+  runtime_artifacts:
+    tokens: [0, 8000]
+
+retrieval_rules:
+  scope: project_id mandatory
+  top_k: {T1: 10, T2: 20, T3: 30}
+  block_paths: [.env, "**/secrets/**", vendor/]
+  adr: include_accepted_referenced_only
+
+compression_order:
+  - retrieved_code_summarize
+  - retrieved_knowledge_truncate_low_relevance
+  - technology_skills_compress
+  - never_drop: [base_context, workflow_summary, accepted_adr_refs_for_arch_review]
+
+freshness:
+  ttl_seconds: 3600
+  invalidate_on: [knowledge_merge, pr_sync]
+  cache_key: [issue_id, stage, knowledge_index_hash]

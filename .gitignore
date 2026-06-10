@@ -1,0 +1,11 @@
+.DS_Store
+node_modules/
+.env
+.env.*
+!.env.example
+*.log
+dist/
+.cache/
+context/packs/*.json
+!context/packs/ContextPack.v1.spec.yaml
+contracts/artifacts/*.json

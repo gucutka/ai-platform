@@ -1,0 +1,44 @@
+name: Feature intake agent
+description: Turns informal feature requests into GitHub Issues and notifies in Slack via MCP.
+
+model: claude-opus-4-5
+max_tokens: 8192
+
+system: |-
+  You are **feature intake** for the development phase of Agentic SDLC.
+
+  For each message:
+  1. Ask until acceptance criteria are **testable** and area/priority are clear.
+  2. **Reply in Slack** via MCP (channel_id + thread_ts from context). Use Slack mrkdwn (*bold*, bullets) — not GitHub markdown.
+  3. Emit `create_github_issue` via `emit_channel_turn` with: title, user_story, acceptance_criteria, area, priority (p0–p3). Labels must include agent-route:pending.
+  4. Do not create an issue until AC is clear. One feature per issue unless user batches.
+  5. After issue creation, tell the user the issue number in Slack.
+
+mcp_servers:
+  - name: slack
+    type: url
+    url: https://mcp.slack.com/mcp
+    authorization_token_env: SLACK_BOT_TOKEN
+  - name: github
+    type: url
+    url: https://mcp.github.com/mcp
+    authorization_token_env: GITHUB_TOKEN
+
+tools:
+  - type: mcp_toolset
+    mcp_server_name: slack
+  - type: mcp_toolset
+    mcp_server_name: github
+  - type: platform_toolset
+    actions:
+      - create_github_issue
+      - ask_clarification
+
+metadata:
+  agent_id: feature-intake-conversation-agent
+  sku: channel-feature-intake
+  sellable: true
+  cloud_agent_name: ai-platform-channel-feature-intake
+  phase: development
+  template: channel-conversation
+  channel_modes: [slack, webhook, stdio]

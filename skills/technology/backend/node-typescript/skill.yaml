@@ -1,0 +1,5 @@
+skill_id: node-typescript
+version: "2.0.0"
+category: technology
+production_grade: true
+context_budget_tokens: 2000

@@ -1,0 +1,23 @@
+agent_id: technical-spec-agent
+enabled: true
+model: claude-opus-4-5
+max_tokens: 4096
+input_contracts:
+  - TriageResult@1.0
+  - ProductSpec@1.0
+output_contract: TechnicalDesign@1.0
+required_context:
+  - issue
+  - manifest
+  - product_spec
+context_layers: [product, technical]
+skills:
+  core: [github-integration]
+  sdlc: [technical-design-format]
+retry:
+  max_attempts: 3
+  backoff_ms: [30000, 120000, 300000]
+failure_handling:
+  escalate_to: tech-lead
+  label: agent-route:blocked
+next_agent: plan-agent

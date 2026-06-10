@@ -1,0 +1,9 @@
+{
+  "contract": "ReviewReport",
+  "version": "1.0",
+  "pr_number": 12,
+  "verdict": "PASS",
+  "findings": [],
+  "spec_compliance": 1.0,
+  "summary": "Looks good"
+}

@@ -1,0 +1,61 @@
+version: "1.0"
+tiers:
+  standard:
+    description: Default delivery — light gates, automerge optional
+    token_budget:
+      monthly_usd: 500
+      per_issue_max: 25
+    gates:
+      require_human_review: false
+      require_security_scan: false
+      architect_review_gate: false
+      architecture_review_agent: false
+      automerge_on_ci_pass: true
+    workflow:
+      path_bias: low_risk
+      force_spec_chain: false
+      max_concurrent_agents: 20
+    automerge:
+      enabled: true
+      method: squash
+
+  enterprise:
+    description: Full spec chain, architect gate, human review
+    token_budget:
+      monthly_usd: 2000
+      per_issue_max: 50
+    gates:
+      require_human_review: true
+      require_security_scan: true
+      architect_review_gate: true
+      architecture_review_agent: true
+      automerge_on_ci_pass: false
+    knowledge_enforcement: true
+    knowledge_require_approval: true
+    workflow:
+      path_bias: medium_feature
+      force_spec_chain: true
+      max_concurrent_agents: 50
+    automerge:
+      enabled: false
+
+  regulated:
+    description: Maximum governance — security mandatory, no automerge
+    token_budget:
+      monthly_usd: 1000
+      per_issue_max: 40
+    gates:
+      require_human_review: true
+      require_security_scan: true
+      architect_review_gate: true
+      architecture_review_agent: true
+      automerge_on_ci_pass: false
+    knowledge_enforcement: true
+    knowledge_require_approval: true
+    workflow:
+      path_bias: high_risk
+      force_spec_chain: true
+      require_security_agent: true
+      max_concurrent_agents: 10
+    automerge:
+      enabled: false

@@ -8,10 +8,6 @@ on:
       issue_number:
         required: true
         type: number
-      platform_path:
-        required: false
-        type: string
-        default: ai-platform
     secrets:
       ANTHROPIC_API_KEY:
         required: true
@@ -44,22 +40,22 @@ jobs:
       - name: Checkout AI Platform
         uses: actions/checkout@v4
         with:
-          repository: ${{ vars.AI_PLATFORM_REPOSITORY || github.repository_owner }}
-          path: ${{ inputs.platform_path || 'ai-platform' }}
+          repository: ${{ vars.AI_PLATFORM_REPOSITORY || format('{0}/ai-platform', github.repository_owner) }}
+          path: ai-platform
           token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
-      - uses: ./${{ inputs.platform_path || 'ai-platform' }}/.github/actions/setup-runtime
+      - uses: ./ai-platform/.github/actions/setup-runtime
         with:
-          platform-path: ${{ inputs.platform_path || 'ai-platform' }}
+          platform-path: ai-platform
 
       - name: Run architecture-review-agent
-        working-directory: ${{ inputs.platform_path || 'ai-platform' }}/runtime
+        working-directory: ai-platform/runtime
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           PROJECT_DIR: ${{ github.workspace }}
-          PLATFORM_ROOT: ${{ github.workspace }}/${{ inputs.platform_path || 'ai-platform' }}
+          PLATFORM_ROOT: ${{ github.workspace }}/ai-platform
         run: |
           node dist/cli.js dispatch \
             --issue ${{ inputs.issue_number || github.event.inputs.issue_number }} \

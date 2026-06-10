@@ -8,15 +8,17 @@ on:
       ANTHROPIC_API_KEY: { required: true }
 
 jobs:
+  context:
+    uses: ./.github/workflows/context-build.yml
+    with:
+      issue_number: ${{ inputs.issue_number }}
+      target_agent: qa-agent
+
   qa:
+    needs: context
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/workflows/context-build.yml
-        with:
-          issue_number: ${{ inputs.issue_number }}
-          target_agent: qa-agent
-        secrets: inherit
       - name: Dispatch qa-agent
         run: echo "qa-agent + CI"
       - name: Run tests

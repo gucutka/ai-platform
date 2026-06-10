@@ -43,11 +43,17 @@ jobs:
             --issue ${{ inputs.issue_number }} \
             --project-dir "$PROJECT_DIR"
 
-      - uses: ./platform/.github/workflows/context-build.yml
-        with:
-          issue_number: ${{ inputs.issue_number }}
-          target_agent: security-agent
-        secrets: inherit
+      - name: Build ContextPack v1
+        working-directory: platform/runtime
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PROJECT_DIR: ${{ github.workspace }}/project
+          PLATFORM_ROOT: ${{ github.workspace }}/platform
+        run: |
+          node dist/cli.js build-context \
+            --issue ${{ inputs.issue_number }} \
+            --agent security-agent
 
       - name: Dispatch security-agent
         working-directory: platform/runtime

@@ -76,6 +76,8 @@ jobs:
           FULL="${{ steps.meta.outputs.full_name }}"
           VIS="${{ inputs.visibility }}"
           cd /tmp/client-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git init -b main
           git add .
           git commit -m "chore: bootstrap client project from ai-platform"
